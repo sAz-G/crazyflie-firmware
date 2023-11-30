@@ -9,3 +9,11 @@ void  addVecf(float* dst, float* src, int sz)
         dst[k] += src[k];
     }
 }
+
+void  scaleVec(float* dst, float scl, int len)
+{
+    for(int k = 0; k < len; k++)
+    {
+        dst[k] = dst[k]*scl;
+    }   
+}

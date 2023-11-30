@@ -1,1 +1,2 @@
 obj-y += coll_avoid_main.o
+obj-y += neighbor_encoder.o

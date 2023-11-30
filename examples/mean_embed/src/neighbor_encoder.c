@@ -2,6 +2,14 @@
 #include "../include/vec.h"
 
 // static variables 
+//////////////////////////////////////// WEIGHTS /////////////////////////////////////////////////
+
+static const float psi_eta_w0[PSI_ETA_H][PSI_ETA_V];
+static const float psi_eta_w1[PSI_ETA_V][PSI_ETA_V];
+
+static const float psi_eta_b0[PSI_ETA_V];
+static const float psi_eta_b1[PSI_ETA_V];
+
 //static neighbor_obs  neighbObsArr[K_NEIGHBORS];          // the neighbor observations 
 static float         networkOutput[NEIGHBOR_NETWORK_OUT]; // e_j in the paper
 static float         encoderOutput[NEIGHBOR_NETWORK_OUT]; // e_m in the paper
@@ -12,7 +20,9 @@ static const int   KNeighbors = (int)K_NEIGHBORS;
 
 // static functions
 static void    calcMean(float*);
-static void    addVectors(neighborVecs*);
+static void    addVectors(neighborVecs*, int len);
+static int     getAmountKNeighbors();
+static int     getAmountOutputs();
 static float*  getNetworkOutput();
 static float*  getEncoderOutput();
 static float*  getEjVector(int k);
@@ -25,9 +35,6 @@ static float*  getObservationVector(int j);
 //feed forward functions for psi_eta, adapted for the FPGA
 //feed forward variables for psi_eta, adapted for the FPGA
 static float out0[K_NEIGHBORS][PSI_ETA_V];
-
-
-
 
 void calcNeighborEncoderOutput()
 {
@@ -43,7 +50,7 @@ static void feedForwardNeighborEncoder()
         feedForwardPsiEta(k);    
     }
     
-    addVectors(neighborVecsArr);
+    addVectors(neighborVecsArr,getAmountKNeighbors());
     calcMean(getNetworkOutput());
 }
 
@@ -70,7 +77,7 @@ static void feedForwardPsiEta0(int raw, int j)
     float temp = 0.0;    
     for(int k = 0; k < sz; k++)
     {
-        temp += psi_eta_w0[raw][k]*obs_j[k]
+        temp += psi_eta_w0[raw][k]*obs_j[k];
     }
 
     for(int k = 0; k < sz; k++)
@@ -88,7 +95,7 @@ static void feedForwardPsiEta1(int raw, int j)
 
     for(int k = 0; k < sz; k++)
     {
-        temp += psi_eta_w1[raw][k]*out0[j][k]
+        temp += psi_eta_w1[raw][k]*out0[j][k];
     }
 
     for(int k = 0; k < sz; k++)
@@ -124,7 +131,7 @@ static void calcMean(float* networkOut)
         scalar = getAmountKNeighbors();
     }
 
-    scaleVec(meanVec, 1.0/scalar);
+    scaleVec(meanVec, (1.0f)/scalar, getAmountOutputs());
 }
 
 static float* getEncoderOutput()
@@ -137,20 +144,25 @@ static float* getNetworkOutput()
     return networkOutput;
 }
 
-static getAmountKNeighbors()
+static int getAmountKNeighbors()
 {
-    return KNeighbors;
+    return (int)KNeighbors;
 }
 
-static void addVectors(neighborVecs* arr)
+static int  getAmountOutputs()
+{
+    return (int)NEIGHBOR_NETWORK_OUT;
+}
+
+static void addVectors(neighborVecs* arr, int len)
 {
 
     /*perform addition of encoder outputs*/
     float* additionvec = getNetworkOutput();
     int KAdditions     = getAmountKNeighbors();
-    int vecLen         = sizeof(additionvec)/sizeof(additionvec[0]);
+    int vecLen         = len;
 
-    for(int k = 0; k < vecLen)
+    for(int k = 0; k < vecLen; k++)
     {
         additionvec[k] = 0.0;
     }
@@ -162,10 +174,3 @@ static void addVectors(neighborVecs* arr)
 }
 
 
-//////////////////////////////////////// WEIGHTS /////////////////////////////////////////////////
-
-static const float psi_eta_w0[PSI_ETA_H][PSI_ETA_V];
-static const float psi_eta_w1[PSI_ETA_V][PSI_ETA_V];
-
-static const float psi_eta_b0[PSI_ETA_V];
-static const float psi_eta_b1[PSI_ETA_V];
