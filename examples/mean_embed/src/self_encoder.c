@@ -16,7 +16,7 @@ functions
 
 // getters
 static selfVecs* getInputOutputVectors();
-//static float*    getSelfEncoderOutput();
+static float*    getSelfEncoderOutput();
 static int       getSelfEncoderOutputSize();
 static int       getEncoderInputSize();
 static float*    getSelfObservationVector();
@@ -83,8 +83,7 @@ static void feedForwardPsiS1(int raw)
 {
     int sz        = getSelfEncoderOutputSize();
     float* inp    = getOut0();
-    //float*  out;    
-   // out = getSelfEncoderOutput();
+    float*  out   = getSelfEncoderOutput();
     float temp    = 0.0;    
 
     for(int k = 0; k < sz; k++)
@@ -92,7 +91,7 @@ static void feedForwardPsiS1(int raw)
         temp += psi_s_w1[raw][k]*inp[k];
     }
 
-    inputOutputVectors->e_s[raw] = temp + psi_s_b1[raw];
+    out[raw] = temp + psi_s_b1[raw];
 }
 
 static selfVecs* getInputOutputVectors()
@@ -106,11 +105,10 @@ static float* getSelfObservationVector()
     return getInputOutputVectors()->obsStruct->self_obs_arr;
 }
 
-// static float* getSelfEncoderOutput()
-// {
-//     selfVecs* IOVecs = getInputOutputVectors();
-//     return IOVecs->e_s;
-// }
+static float* getSelfEncoderOutput()
+{
+    return getInputOutputVectors()->e_s;
+}
 
 static float* getOut0()
 {
