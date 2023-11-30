@@ -38,12 +38,15 @@
 
 #include "debug.h"
 
-#include "../include/neighbor_encoder.h"
+//#include "../include/neighbor_encoder.h"
+//#include "../include/self_encoder.h"
 
 void appMain() {
 
   while(1) {
     vTaskDelay(M2T(2000));
-    calcNeighborEncoderOutput();
+  //  calcNeighborEncoderOutput();
+   // calcSelfEncoderOutput();
+  
   }
 }
