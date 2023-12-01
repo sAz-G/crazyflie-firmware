@@ -50,6 +50,7 @@ typedef struct _SELF_VECS
 }selfVecs;
 
 
-void calcSelfEncoderOutput();
+void    calcSelfEncoderOutput(float*);
+float*  getSelfOutput();
 
 #endif

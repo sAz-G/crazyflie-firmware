@@ -32,12 +32,15 @@ static void    feedForwardPsiEta0(int k, int j);
 static void    feedForwardPsiEta1(int k, int j);
 static float*  getObservationVector(int j);
 
+static void setNeighborInput(float* inp, int neighbor);
+
 //feed forward functions for psi_eta, adapted for the FPGA
 //feed forward variables for psi_eta, adapted for the FPGA
 static float out0[K_NEIGHBORS][PSI_ETA_V];
 
-void calcNeighborEncoderOutput()
+void calcNeighborEncoderOutput(float* inp)
 {
+    setNeighborInput(inp, k);
     feedForwardNeighborEncoder();
 }
 
@@ -174,3 +177,13 @@ static void addVectors(neighborVecs* arr, int len)
 }
 
 
+
+static void setNeighborInput(float* inp, int neighbor)
+{
+    int sz = getEncoderInputSize();
+    float* obsArr = getObservationVector(neighbor);
+    for(int k = 0; k < sz; k++)
+    {
+       obsArr[k] = inp[k];
+    }
+}

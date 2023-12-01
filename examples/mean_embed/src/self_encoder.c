@@ -22,6 +22,8 @@ static int       getEncoderInputSize();
 static float*    getSelfObservationVector();
 static float*    getOut0();
 //static void      updateSelfInfo();
+static void      setSelfInput(float*);
+
 
 
 static void    feedForwardSelfEncoder();
@@ -34,8 +36,9 @@ static float out0[PSI_S_V];
 
 
 
-void calcSelfEncoderOutput()
+void calcSelfEncoderOutput(float* inp)
 {
+    setSelfInput(inp);
     feedForwardSelfEncoder();
 }
 
@@ -123,4 +126,18 @@ static int getEncoderInputSize()
 static int getSelfEncoderOutputSize()
 {
     return (int)PSI_S_V;
+}
+
+float*  getSelfOutput()
+{
+    return inputOutputVectors->e_s;
+}
+
+void  setSelfInput(float* arr)
+{
+    for(int k = 0; k < getEncoderInputSize(); k++)
+    {
+        inputOutputVectors->obsStruct->self_obs_arr[k] = arr[k];
+    }
+    
 }
