@@ -24,7 +24,7 @@ void  addVecf(float*, float*, int sz);
 void  substractVec(float*, float*, float*);
 void  scaleVec(float*, float, int);
 float dotProdf(float*, float*);
-
+float  clipVal(float, float, float);
 
 
 #endif

@@ -7,7 +7,7 @@ static const float psi_s_b0[PSI_S_V];
 static const float psi_s_b1[PSI_S_V];
 
 
-static selfVecs*  inputOutputVectors;       
+//static selfVecs*  inputOutputVectors;       
 //static float      encoderOutput[SELF_NETWORK_OUT]; // e_s in the paper
 
 /*
@@ -15,37 +15,38 @@ functions
 */
 
 // getters
-static selfVecs* getInputOutputVectors();
-static float*    getSelfEncoderOutput();
+//static selfVecs* getInputOutputVectors();
+//static float*    getSelfEncoderOutput();
 static int       getSelfEncoderOutputSize();
+static int       getSelfEncoderOutput0Size();
 static int       getEncoderInputSize();
-static float*    getSelfObservationVector();
-static float*    getOut0();
+//static float*    getSelfObservationVector();
+// static float*    getOut0();
 //static void      updateSelfInfo();
-static void      setSelfInput(float*);
+//static void      setSelfInput(float*);
 
 
 
-static void    feedForwardSelfEncoder();
-static void    feedForwardPsiS();
-static void    feedForwardPsiS0(int k);
-static void    feedForwardPsiS1(int k);
+static void    feedForwardSelfEncoder(float* inp, float* dst);
+static void    feedForwardPsiS(float* inp, float* dst);
+static void    feedForwardPsiS0(float* inp, float* dst,int k);
+static void    feedForwardPsiS1(float* inp, float* dst,int k);
 
 
-static float out0[PSI_S_V];
+//static float out0[PSI_S_V];
 
 
 
-void calcSelfEncoderOutput(float* inp)
+void calcSelfEncoderOutput(float* inp, float* dst)
 {
-    setSelfInput(inp);
-    feedForwardSelfEncoder();
+    //setSelfInput(inp);
+    feedForwardSelfEncoder(inp, dst);
 }
 
-static void feedForwardSelfEncoder()
+static void feedForwardSelfEncoder(float* inp, float* dst)
 {
     //updateSelfInfo();
-    feedForwardPsiS();
+    feedForwardPsiS(inp, dst);
 }
 
 /*static void updateSelfInfo()
@@ -53,25 +54,25 @@ static void feedForwardSelfEncoder()
     return;
 }*/
 
-static void  feedForwardPsiS()
+static void  feedForwardPsiS(float* inp, float* dst)
 {
+    float* out0[getSelfEncoderOutput0Size()];
     for(int k = 0; k < getSelfEncoderOutputSize(); k++)
     {
-        feedForwardPsiS0(k);
+        feedForwardPsiS0(inp, out0, k);
     }   
 
+    float* out1[getSelfEncoderOutput0Size()];
     for(int k = 0; k < getSelfEncoderOutputSize(); k++)
     {
-        feedForwardPsiS1(k);
+        feedForwardPsiS1(out0, out1, k);
     }   
 }
 
 
-static void feedForwardPsiS0(int raw)
+static void feedForwardPsiS0(float* inp, float* out, int raw)
 {
     int sz        = getEncoderInputSize();
-    float* inp    = getSelfObservationVector();
-    float* out    = getOut0();
     float temp    = 0.0;    
 
     for(int k = 0; k < sz; k++)
@@ -82,11 +83,9 @@ static void feedForwardPsiS0(int raw)
     out[raw] = temp + psi_s_b0[raw];
 }
 
-static void feedForwardPsiS1(int raw)
+static void feedForwardPsiS1(float* inp, float* out, int raw)
 {
     int sz        = getSelfEncoderOutputSize();
-    float* inp    = getOut0();
-    float*  out   = getSelfEncoderOutput();
     float temp    = 0.0;    
 
     for(int k = 0; k < sz; k++)
@@ -97,26 +96,26 @@ static void feedForwardPsiS1(int raw)
     out[raw] = temp + psi_s_b1[raw];
 }
 
-static selfVecs* getInputOutputVectors()
-{
-    return inputOutputVectors;
-}
+// static selfVecs* getInputOutputVectors()
+// {
+//     return inputOutputVectors;
+// }
 
 
-static float* getSelfObservationVector()
-{
-    return getInputOutputVectors()->obsStruct->self_obs_arr;
-}
+// static float* getSelfObservationVector()
+// {
+//     return getInputOutputVectors()->obsStruct->self_obs_arr;
+// }
 
-static float* getSelfEncoderOutput()
-{
-    return getInputOutputVectors()->e_s;
-}
+// static float* getSelfEncoderOutput()
+// {
+//     return getInputOutputVectors()->e_s;
+// }
 
-static float* getOut0()
-{
-    return out0;
-}
+// static float* getOut0()
+// {
+//     return out0;
+// }
 
 static int getEncoderInputSize()
 {
@@ -128,16 +127,21 @@ static int getSelfEncoderOutputSize()
     return (int)PSI_S_V;
 }
 
-float*  getSelfOutput()
+static int getSelfEncoderOutput0Size()
 {
-    return inputOutputVectors->e_s;
+    return (int)PSI_S_V;
 }
 
-void  setSelfInput(float* arr)
-{
-    for(int k = 0; k < getEncoderInputSize(); k++)
-    {
-        inputOutputVectors->obsStruct->self_obs_arr[k] = arr[k];
-    }
+// float*  getSelfOutput()
+// {
+//     return inputOutputVectors->e_s;
+// }
+
+// void  setSelfInput(float* arr)
+// {
+//     for(int k = 0; k < getEncoderInputSize(); k++)
+//     {
+//         inputOutputVectors->obsStruct->self_obs_arr[k] = arr[k];
+//     }
     
-}
+// }

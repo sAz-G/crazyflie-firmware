@@ -17,3 +17,19 @@ void  scaleVec(float* dst, float scl, int len)
         dst[k] = dst[k]*scl;
     }   
 }
+
+float clipVal(float val, float min, float max)
+{
+    if(val < min)
+    {
+        return min;
+    }
+    else if (val > max)
+    {
+        return max;
+    }
+    else{
+        return val;
+    }
+    
+}
