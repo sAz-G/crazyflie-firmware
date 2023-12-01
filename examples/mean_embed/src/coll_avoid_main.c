@@ -40,6 +40,7 @@
 
 #include "../include/neighbor_encoder.h"
 #include "../include/self_encoder.h"
+#include "../include/mlp.h"
 
 void appMain() {
 
@@ -47,6 +48,6 @@ void appMain() {
     vTaskDelay(M2T(2000));
     calcNeighborEncoderOutput();
     calcSelfEncoderOutput();
-  
+    calcMlpOutput();
   }
 }
