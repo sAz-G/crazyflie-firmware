@@ -49,6 +49,8 @@
 #include "nvicconf.h"
 #include "sleepus.h"
 
+#include "autoconf.h"
+
 //DEBUG
 #ifdef I2CDRV_DEBUG_LOG_EVENTS
 #include "usec_time.h"
@@ -169,7 +171,7 @@ static const I2cDef deckBusDef =
   .gpioAF             = GPIO_AF_I2C1,
   .dmaPerif           = RCC_AHB1Periph_DMA1,
   .dmaChannel         = DMA_Channel_1,
-#ifdef USDDECK_USE_ALT_PINS_AND_SPI
+#ifdef CONFIG_DECK_USD_USE_ALT_PINS_AND_SPI
   .dmaRxStream        = DMA1_Stream5,
   .dmaRxIRQ           = DMA1_Stream5_IRQn,
   .dmaRxTCFlag        = DMA_FLAG_TCIF5,
@@ -268,7 +270,7 @@ static void i2cdrvTryToRestartBus(I2cDrv* i2c)
   I2C_ITConfig(i2c->def->i2cPort, I2C_IT_ERR, ENABLE);
 
   NVIC_InitStructure.NVIC_IRQChannel = i2c->def->i2cEVIRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_HIGH_PRI;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_I2C_PRI;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
@@ -303,7 +305,7 @@ static void i2cdrvDmaSetupBus(I2cDrv* i2c)
   i2c->DMAStruct.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
   NVIC_InitStructure.NVIC_IRQChannel = i2c->def->dmaRxIRQ;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_HIGH_PRI;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_I2C_PRI;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
@@ -499,6 +501,13 @@ static void i2cdrvEventIsrHandler(I2cDrv* i2c)
       DMA_ITConfig(i2c->def->dmaRxStream, DMA_IT_TC | DMA_IT_TE, ENABLE);
       I2C_DMACmd(i2c->def->i2cPort, ENABLE); // Enable before ADDR clear
 
+      // Workaround to enable DMA for Renode simulation.
+      // The I2C uses the DMA for reading, but the Renode implementation lacks some functionality
+      // and for a message to be read the DMA needs to be enabled manually.
+      // Without setting this bit the I2C reading fails.
+      // With added functionality it should be possible to remove.
+      DMA_Cmd(i2c->def->dmaRxStream, ENABLE); // Workaround
+
       __DMB();                         // Make sure instructions (clear address) are in correct order
       SR2 = i2c->def->i2cPort->SR2;    // clear ADDR
     }
@@ -561,6 +570,10 @@ static void i2cdrvEventIsrHandler(I2cDrv* i2c)
       {
         // Disable TXE to allow the buffer to flush and get BTF
         I2C_ITConfig(i2c->def->i2cPort, I2C_IT_BUF, DISABLE);
+        // If an instruction is not here an extra byte gets sent, don't know why...
+        // Is is most likely timing issue but STM32F405 I2C peripheral is bugged so
+        // this is the best solution so far.
+        __DMB();
       }
     }
   }
@@ -610,7 +623,7 @@ static void i2cdrvClearDMA(I2cDrv* i2c)
 
 static void i2cdrvDmaIsrHandler(I2cDrv* i2c)
 {
-  if (DMA_GetFlagStatus(i2c->def->dmaRxStream, i2c->def->dmaRxTCFlag)) // Tranasfer complete
+  if (DMA_GetFlagStatus(i2c->def->dmaRxStream, i2c->def->dmaRxTCFlag)) // Transfer complete
   {
     i2cdrvClearDMA(i2c);
     i2cNotifyClient(i2c);
@@ -638,7 +651,7 @@ void __attribute__((used)) I2C1_EV_IRQHandler(void)
   i2cdrvEventIsrHandler(&deckBus);
 }
 
-#ifdef USDDECK_USE_ALT_PINS_AND_SPI
+#ifdef CONFIG_DECK_USD_USE_ALT_PINS_AND_SPI
 void __attribute__((used)) DMA1_Stream5_IRQHandler(void)
 #else
 void __attribute__((used)) DMA1_Stream0_IRQHandler(void)

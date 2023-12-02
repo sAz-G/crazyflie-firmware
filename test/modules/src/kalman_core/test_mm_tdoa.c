@@ -4,24 +4,22 @@
 #include "unity.h"
 
 #include "mock_kalman_core.h"
-#include "mock_outlierFilter.h"
+#include "mock_outlierFilterTdoa.h"
 #include "kalman_core_mm_test_helpers.c"
 
 // Default data initialized in setup()
 static kalmanCoreData_t this;
 static float expectedHm[KC_STATE_DIM];
-
-// Instrumented in code under test
-extern uint32_t tdoaCount;
+static OutlierFilterTdoaState_t outlierFilterTdoaState;
 
 void setUp(void) {
   memset(&this, 0, sizeof(this));
   memset(&expectedHm, 0, sizeof(expectedHm));
 
-  // Make sure we pass the tdoaCount counter
-  tdoaCount = 100;
-
   initKalmanCoreScalarUpdateExpectationsSingleCall();
+
+  outlierFilterTdoaReset_Ignore();
+  outlierFilterTdoaReset(&outlierFilterTdoaState);
 }
 
 void tearDown(void) {
@@ -42,7 +40,7 @@ void testThatScalarUpdateIsCalledInSimpleCase() {
   expectedHm[KC_STATE_Z] = 0.0;
 
   tdoaMeasurement_t measurement = {
-    .anchorPosition = {
+    .anchorPositions = {
       {.x = -1.0, .y = 0.0, .z = 0.0},
       {.x = 1.0, .y = 0.0, .z = 0.0},
     },
@@ -51,10 +49,10 @@ void testThatScalarUpdateIsCalledInSimpleCase() {
   };
 
   setKalmanCoreScalarUpdateExpectationsSingleCall(&this, expectedHm, expectedError, expectedStdMeasNoise);
-  outlierFilterValidateTdoaSteps_IgnoreAndReturn(true);
+  outlierFilterTdoaValidateIntegrator_IgnoreAndReturn(true);
 
   // Test
-  kalmanCoreUpdateWithTDOA(&this, &measurement);
+  kalmanCoreUpdateWithTdoa(&this, &measurement, 0, &outlierFilterTdoaState);
 
   // Assert
   assertScalarUpdateWasCalled();
@@ -68,7 +66,7 @@ void testThatSampleWhereDroneIsInSamePositionAsAnchorIsIgnored() {
   this.S[KC_STATE_Z] = 0.0;
 
   tdoaMeasurement_t measurement = {
-    .anchorPosition = {
+    .anchorPositions = {
       {.x = -1.0, .y = 0.0, .z = 0.0},
       {.x = 1.0, .y = 0.0, .z = 0.0},
     },
@@ -77,7 +75,7 @@ void testThatSampleWhereDroneIsInSamePositionAsAnchorIsIgnored() {
   };
 
   // Test
-  kalmanCoreUpdateWithTDOA(&this, &measurement);
+  kalmanCoreUpdateWithTdoa(&this, &measurement, 0, &outlierFilterTdoaState);
 
   // Assert
   assertScalarUpdateWasNotCalled();
@@ -91,7 +89,7 @@ void testThatScalarUpdateIsNotCalledWhenTheOutlierFilterIsBlocking() {
   this.S[KC_STATE_Z] = 0.0;
 
   tdoaMeasurement_t measurement = {
-    .anchorPosition = {
+    .anchorPositions = {
       {.x = -1.0, .y = 0.0, .z = 0.0},
       {.x = 1.0, .y = 0.0, .z = 0.0},
     },
@@ -99,10 +97,10 @@ void testThatScalarUpdateIsNotCalledWhenTheOutlierFilterIsBlocking() {
     .stdDev = 0.123,
   };
 
-  outlierFilterValidateTdoaSteps_IgnoreAndReturn(false);
+  outlierFilterTdoaValidateIntegrator_IgnoreAndReturn(false);
 
   // Test
-  kalmanCoreUpdateWithTDOA(&this, &measurement);
+  kalmanCoreUpdateWithTdoa(&this, &measurement, 0, &outlierFilterTdoaState);
 
   // Assert
   assertScalarUpdateWasNotCalled();

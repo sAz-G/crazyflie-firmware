@@ -17,7 +17,7 @@ In order to add a new event trigger named `myEvent` with a payload of two variab
 #include "eventtrigger.h"
 
 // declares eventTrigger_myEvent and eventTrigger_myEvent_payload
-EVENTTRIGGER(myEvent, uint8, var1, float var2)
+EVENTTRIGGER(myEvent, uint8, var1, float, var2)
 ```
 
 The EVENTTRIGGER macro is variadic, i.e. it can take a varying number of arguments. It is also valid to have a event trigger without any payload.
@@ -39,5 +39,5 @@ should not be part of it.
 
 ## Using Event Triggers
 
-Currently, the only backend for event triggers is the uSD-card deck. You can find a description of how to configure
-and analyze the events in its [documentation](/docs/userguides/decks/micro-sd-card-deck.md).
+Currently, the only backend for event triggers is the **uSD-card deck**. You can find a description of how to configure
+and analyze the events on the usage tab of [the uSD-card deck product page](https://www.bitcraze.io/products/micro-sd-card-deck/).

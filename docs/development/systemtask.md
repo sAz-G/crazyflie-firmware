@@ -22,8 +22,7 @@ In this example, we will set up the skeleton for such a new subsystem.
 
 
 
-Development environment
------------------------
+## Development environment
 
 You should have the
 [crazyflie-firmware](https://github.com/bitcraze/crazyflie-firmware) and
@@ -37,10 +36,9 @@ For the rest of the howto you will work in the crazyflie-firmware
 project.
 
 
-Setting the task constants
---------------------------
+## Setting the task constants
 
-Each task has a few constants that are stored globally in `config/config.h`.
+Each task has a few constants that are stored globally in `src/config/config.h`.
 
 First, set the task priority. The FreeRTOS scheduler always prefers to run
 a higher-priority task. High priorities should be reserved for very
@@ -70,12 +68,11 @@ In `config.h`, after the existing task stack sizes, add the line
 ```
 
 
-Implementing the task
----------------------
+## Implementing the task
 
 High level tasks (those that do not directly talk to hardware) usually go in
 the `modules` directory. We will walk through the sections needed in a
-new file `modules/src/example.c`.
+new file `src/modules/src/example.c`.
 
 
 First, include the necessary system header files:
@@ -89,7 +86,7 @@ First, include the necessary system header files:
 #include "task.h"
 ```
 
-### File-static variables
+## File-static variables
 
 Next, we statically allocate the queue to hold inputs from
 other parts of the system such as the radio.
@@ -116,7 +113,7 @@ static void exampleTask(void*);
 STATIC_MEM_TASK_ALLOC(exampleTask, EXAMPLE_TASK_STACKSIZE);
 ```
 
-### Functions
+## Functions
 
 Next, we implement the `Init()` function.
 This should contain all of the FreeRTOS allocations and initializations
@@ -196,16 +193,14 @@ for more details on the many `xQueue` API functions available.
 > that can be compiled, run, and debugged on a PC.
 
 
-Writing the public interface
-----------------------------
+## Writing the public interface
 
 Subsystems should expose a public interface to other parts of the firmware
 that hide implementation details as much as is practical.
-We create the new file in `modules/interface/example.h`:
+We create the new file in `src/modules/interface/example.h`:
 
 ``` {.c}
-#ifndef __EXAMPLE_TASK_H__
-#define __EXAMPLE_TASK_H__
+#pragma once
 
 #include <stdbool.h>
 
@@ -213,17 +208,14 @@ void exampleTaskInit();
 bool exampleTaskTest();
 
 void exampleTaskEnqueueInput(int value);
-
-#endif // __EXAMPLE_TASK_H__
 ```
 
 In a real task, make sure to comment the public API thoroughly.
 
 
-Initializing the task
----------------------
+## Initializing the task
 
-In `modules/src/system.c`, make the following changes.
+In `src/modules/src/system.c`, make the following changes.
 
 Include the header for our new task:
 
@@ -247,26 +239,28 @@ pass &= exampleTaskTest();
 ```
 
 
-Adding the task to the build
-----------------------------
+## Adding the task to the build
 
-Add this to the Makefile, after the end of the `Modules` block:
+Add this to the  `Kbuild` in `src/modules/src/`
 
 ``` {.make}
-PROJ_OBJ += example.o
+obj-y += example.o
 ```
 
 
-Compile, flash and run!
------------------------
+## Compile, flash and run!
 
 Now the last step is to compile and flash your new firmware. Launch the
-following commands in a shell:
+following commands in a shell.
 
 ``` {.bash}
-crazyflie-firmware$ make
+crazyflie-firmware$ make clean && make
 crazyflie-firmware$ make cload
 ```
+
+> If you see `*** Configuration file ".config" not found!`, make sure
+> select the right build config. Please see [the build instructions](/docs/building-and-flashing/build.md)
+
 
 The output will be similar to the following:
 
