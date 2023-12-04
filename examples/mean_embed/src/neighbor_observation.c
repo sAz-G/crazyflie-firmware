@@ -5,22 +5,16 @@
 #include <string.h>
 
 
-typedef struct _PacketData
-{
-  int id;
-  Vector3 pos;
-  Vector3 vel;
-} PacketData;  // size: ? bytes + 12 bytes + 12 bytes  // max: 60 bytes
-
 
 
 static void checkAmountAdded();
 
 static PacketData   neighborInfo[N_DRONES];
 
-static int collectedK       = 0;
-static int farthestNeighbor = 0;
-static int lastAdded        = 0;
+static bool isInit = false;
+static int collectedK           = 0;
+static int farthestNeighbor     = 0;
+static int lastAdded            = 0;
 static int collectedList[6]     = {-1,-1,-1,-1,-1,-1};
 
 void p2pcallbackHandler(P2PPacket *p)
@@ -33,6 +27,12 @@ void p2pcallbackHandler(P2PPacket *p)
 
 void updateNeighbObservation(neighb_obs* kNearestArr)
 {   
+
+    if(!isInit)
+    {
+        p2pRegisterCB(p2pcallbackHandler);
+        isInit = true;
+    }
 
     Vector3 ownPos = getPosition();
     Vector3 ownVel = getVeloc();

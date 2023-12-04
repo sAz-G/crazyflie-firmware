@@ -2,7 +2,7 @@
 #define __NEIGHBOR_OBSERVATION_H__
 
 #include "../include/vec.h"
-
+#include <stdint.h>
 #define NEIGHBOROBSSIZE 6
 #define KNEARESTAMOUNT 6
 #define MAXNEIGhBVELX 3
@@ -37,6 +37,14 @@ typedef struct _NEIGHB_OBS
     int obsLen;
     
 }neighb_obs;
+
+typedef struct _PacketData
+{
+  uint8_t id;
+  Vector3 pos;
+  Vector3 vel;
+} PacketData;  // size: ? bytes + 12 bytes + 12 bytes  // max: 60 bytes
+
 
 void updateNeighbObservation(neighb_obs* kNearest);
 

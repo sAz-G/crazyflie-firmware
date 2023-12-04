@@ -15,7 +15,6 @@
 
 */
 //static const int selfObservationSize = (int)SELFOBSERVATIONSIZE;
-static self_obs  selfObservation;
 
 // constants variables
 struct selfObservationLimit
@@ -108,7 +107,8 @@ struct selfObservationLimit
   (float)MINW3
   };
 
-
+static self_obs  selfObservation;
+static Vector3 targetPos;
 static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
@@ -129,9 +129,9 @@ void updateSelfObservation(self_obs* slfObs)
     estimatorKalmanGetEstimatedRot(rotationMat);
     clipOrientation(rotationMat);
 
-    selfObservation.px = ownPos.x;
-    selfObservation.py = ownPos.y;
-    selfObservation.pz = ownPos.z;
+    selfObservation.px = targetPos.x - ownPos.x;
+    selfObservation.py = targetPos.y - ownPos.y;
+    selfObservation.pz = targetPos.z - ownPos.z;
 
     selfObservation.vx = ownVel.x;
     selfObservation.vy = ownVel.y;
