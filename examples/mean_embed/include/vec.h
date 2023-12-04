@@ -18,13 +18,16 @@ typedef struct _Vec6
     float f;
 }Vector6;
 
-float calcNormf(float*);
+float calcNormf(Vector3);
 float calcMeanMatrixf(float**, float*, int);
-void  addVecf(float*, float*, int sz);
-void  substractVec(float*, float*, float*);
+Vector3  addVecf(Vector3, Vector3);
+Vector3  substractVec(Vector3, Vector3);
+Vector3 negateVec(Vector3 vec);
 void  scaleVec(float*, float, int);
 float dotProdf(float*, float*);
 float  clipVal(float, float, float);
+float calcDistf(Vector3, Vector3);
+float normf(Vector3);
 
 
 #endif

@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include "estimator.h"
+#include "/home/saz/GitHub/masterthesis_crazyflie/examples/mean_embed/include/vec.h"
 
 /**
  * Initialize the stabilizer subsystem and launch the stabilizer loop task.
@@ -44,4 +45,6 @@ void stabilizerInit(StateEstimatorType estimator);
  */
 bool stabilizerTest(void);
 
+Vector3 getVelocity();
+Vector3 getAngularVelocity();
 #endif /* STABILIZER_H_ */

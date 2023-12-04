@@ -102,6 +102,37 @@ static struct {
   int16_t rateYaw;
 } stateCompressed;
 
+Vector3 getVelocity()
+{
+  float vx = ((float)stateCompressed.vx)/1000.0f;
+  float vy = ((float)stateCompressed.vy)/1000.0f;
+  float vz = ((float)stateCompressed.vz)/1000.0f;
+
+  Vector3 vel;
+
+  vel.x=vx;
+  vel.y=vy; 
+  vel.z=vz;
+
+  return vel;
+}
+
+Vector3 getAngularVelocity()
+{
+  float wx = ((float)stateCompressed.vx)/1000.0f;
+  float wy = ((float)stateCompressed.vy)/1000.0f;
+  float wz = ((float)stateCompressed.vz)/1000.0f;
+
+  Vector3 w;
+
+  w.x=wx;
+  w.y=wy;
+  w.z=wz;
+  
+  return w;
+}
+
+
 static struct {
   // position - mm
   int16_t x;

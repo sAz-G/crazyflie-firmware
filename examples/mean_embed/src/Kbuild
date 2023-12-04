@@ -1,2 +1,8 @@
 obj-y += coll_avoid_main.o
 obj-y += neighbor_encoder.o
+obj-y += mlp.o
+obj-y += neighbor_observation.o
+obj-y += nn.o
+obj-y += self_encoder.o
+obj-y += self_observation.o
+obj-y += vec.o

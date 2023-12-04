@@ -1,8 +1,16 @@
 #include "../include/neighbor_encoder.h"
 #include "../include/vec.h"
+#include "../include/neighbor_observation.h"
+
 
 // static variables 
 //////////////////////////////////////// WEIGHTS /////////////////////////////////////////////////
+typedef struct ENCODER_VECTORS
+{
+    float inp[6];
+    float out0[8];
+    float out1[8];
+}encoderVectors;
 
 static const float psi_eta_w0[PSI_ETA_H][PSI_ETA_V];
 static const float psi_eta_w1[PSI_ETA_V][PSI_ETA_V];
@@ -11,76 +19,75 @@ static const float psi_eta_b0[PSI_ETA_V];
 static const float psi_eta_b1[PSI_ETA_V];
 
 //static neighbor_obs  neighbObsArr[K_NEIGHBORS];          // the neighbor observations 
-static float         networkOutput[NEIGHBOR_NETWORK_OUT]; // e_j in the paper
-static float         encoderOutput[NEIGHBOR_NETWORK_OUT]; // e_m in the paper
-static neighborVecs  neighborVecsArr[K_NEIGHBORS];       // an array of structs, where each struct 
-                                                          // contains the observation array and output array of each neighbor 
+                                                      // contains the observation array and output array of each neighbor 
+static encoderVectors encoderVecs;
+
 
 static const int   KNeighbors = (int)K_NEIGHBORS;
 
 // static functions
-static void    calcMean(float*);
-static void    addVectors(neighborVecs*, int len);
-static int     getAmountKNeighbors();
-static int     getAmountOutputs();
-static float*  getNetworkOutput();
-static float*  getEncoderOutput();
-static float*  getEjVector(int k);
-static void    feedForwardNeighborEncoder();
-static void    feedForwardPsiEta(int k);
-static void    feedForwardPsiEta0(int k, int j);
-static void    feedForwardPsiEta1(int k, int j);
-static float*  getObservationVector(int j);
+static void         calcMean(float*);
+static int          getAmountKNeighbors();
+static int          getAmountOutputs();
+static void         feedForwardNeighborEncoder(neighb_obs* inp, float* outp);
+static void         feedForwardPsiEta(neighb_obs obsK);
+static void         feedForwardPsiEta0(float* inp, int raw);
+static void         feedForwardPsiEta1(float* inp, int raw);
+static void         addVectors(float* arr1, float* arr2, int len);
 
-static void setNeighborInput(float* inp, int neighbor);
 
 //feed forward functions for psi_eta, adapted for the FPGA
 //feed forward variables for psi_eta, adapted for the FPGA
-static float out0[K_NEIGHBORS][PSI_ETA_V];
 
-void calcNeighborEncoderOutput(float* inp)
+void calcNeighborEncoderOutput(neighb_obs* inp, float* outp)
 {
-    setNeighborInput(inp, k);
-    feedForwardNeighborEncoder();
+    feedForwardNeighborEncoder(inp, outp);
 }
 
-
-static void feedForwardNeighborEncoder()
+static void feedForwardNeighborEncoder(neighb_obs* inp, float* outpEncoder)
 {
     int sz = getAmountKNeighbors();
+
     for(int k = 0; k < sz; k++)
     {
-        feedForwardPsiEta(k);    
+        feedForwardPsiEta(inp[k]);    
+        addVectors(encoderVecs.out1,outpEncoder,8);
     }
     
-    addVectors(neighborVecsArr,getAmountKNeighbors());
-    calcMean(getNetworkOutput());
+    calcMean(outpEncoder);
 }
 
-static void feedForwardPsiEta(int j)
+static void feedForwardPsiEta(neighb_obs obsK)
 {
-    //float* obs_j = getObservationVector(j);
     int sz       = (int)PSI_ETA_V;
-    
+
+    encoderVecs.inp[0] = obsK.relPos.x;
+    encoderVecs.inp[1] = obsK.relPos.y;
+    encoderVecs.inp[2] = obsK.relPos.z;
+    encoderVecs.inp[3] = obsK.relVel.x;
+    encoderVecs.inp[4] = obsK.relVel.y;
+    encoderVecs.inp[5] = obsK.relVel.z;
+
     for(int k = 0; k < sz; k++)
     {
-        feedForwardPsiEta0(k, j);
+        feedForwardPsiEta0(encoderVecs.inp, k);
     }
 
     for(int k = 0; k < sz; k++)
     {
-        feedForwardPsiEta1(k, j);
+        feedForwardPsiEta1(encoderVecs.out0, k);
     }
+
 }
 
-static void feedForwardPsiEta0(int raw, int j)
+static void feedForwardPsiEta0(float* inp, int raw)
 {
-    int sz        = (int)PSI_ETA_H;
-    float* obs_j  = getObservationVector(j);
-    float temp = 0.0;    
+    int   sz     = (int)PSI_ETA_H;
+    float temp   = 0.0F;    
+
     for(int k = 0; k < sz; k++)
     {
-        temp += psi_eta_w0[raw][k]*obs_j[k];
+        temp += psi_eta_w0[raw][k]*inp[k];
     }
 
     for(int k = 0; k < sz; k++)
@@ -88,17 +95,17 @@ static void feedForwardPsiEta0(int raw, int j)
         temp += psi_eta_b0[k];
     }
 
-    out0[j][raw] = temp;
+    encoderVecs.out0[raw] = temp;
 }
 
-static void feedForwardPsiEta1(int raw, int j)
+static void feedForwardPsiEta1(float* inp, int raw)
 {
     int sz        = (int)PSI_ETA_V;
-    float temp    = 0;
+    float temp    = 0.0F;
 
     for(int k = 0; k < sz; k++)
     {
-        temp += psi_eta_w1[raw][k]*out0[j][k];
+        temp += psi_eta_w1[raw][k]*inp[k];
     }
 
     for(int k = 0; k < sz; k++)
@@ -106,24 +113,13 @@ static void feedForwardPsiEta1(int raw, int j)
         temp += psi_eta_b1[k];
     }
 
-    float* out1_j = getEjVector(j);
-    out1_j[raw] = temp;
+    encoderVecs.out1[raw] = temp;
 }
 
-static float*  getObservationVector(int j)
-{
-    return neighborVecsArr[j].obsStruct->neighb_obs_arr;
-}
-
-static float*  getEjVector(int j)
-{
-    return neighborVecsArr[j].e_j;
-}
 
 static void calcMean(float* networkOut)
 {
     float scalar;
-    float* meanVec = getEncoderOutput();
 
     if(getAmountKNeighbors() == 0.0)
     {
@@ -134,17 +130,7 @@ static void calcMean(float* networkOut)
         scalar = getAmountKNeighbors();
     }
 
-    scaleVec(meanVec, (1.0f)/scalar, getAmountOutputs());
-}
-
-static float* getEncoderOutput()
-{
-    return encoderOutput;
-}
-
-static float* getNetworkOutput()
-{
-    return networkOutput;
+    scaleVec(networkOut, (1.0f)/scalar, getAmountOutputs());
 }
 
 static int getAmountKNeighbors()
@@ -157,33 +143,15 @@ static int  getAmountOutputs()
     return (int)NEIGHBOR_NETWORK_OUT;
 }
 
-static void addVectors(neighborVecs* arr, int len)
+static void addVectors(float* arr1, float* arr2, int len)
 {
 
     /*perform addition of encoder outputs*/
-    float* additionvec = getNetworkOutput();
-    int KAdditions     = getAmountKNeighbors();
     int vecLen         = len;
 
     for(int k = 0; k < vecLen; k++)
     {
-        additionvec[k] = 0.0;
-    }
-
-    for(int k = 0; k < KAdditions; k++)
-    {
-        addVecf(additionvec, (arr + k)->e_j, vecLen);
+        arr2[k] = arr1[k] + arr2[k];
     }
 }
 
-
-
-static void setNeighborInput(float* inp, int neighbor)
-{
-    int sz = getEncoderInputSize();
-    float* obsArr = getObservationVector(neighbor);
-    for(int k = 0; k < sz; k++)
-    {
-       obsArr[k] = inp[k];
-    }
-}

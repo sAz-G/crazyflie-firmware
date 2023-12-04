@@ -5,6 +5,19 @@
         "**/bower_components": true
     },
     "files.associations": {
-        "bootloader.h": "c"
+        "bootloader.h": "c",
+        "stdbool.h": "c",
+        "stdint.h": "c",
+        "self_observation.h": "c",
+        "sensors.h": "c",
+        "commander.h": "c",
+        "collision_avoidance.h": "c",
+        "vec.h": "c",
+        "neighbor_observation.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "self_encoder.h": "c",
+        "neighbor_encoder.h": "c"
     }
 }

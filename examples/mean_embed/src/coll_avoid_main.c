@@ -37,17 +37,14 @@
 #include "task.h"
 
 #include "debug.h"
+#include "../include/nn.h"
 
-#include "../include/neighbor_encoder.h"
-#include "../include/self_encoder.h"
-#include "../include/mlp.h"
+float thrusts[4];
 
 void appMain() {
 
   while(1) {
-    vTaskDelay(M2T(2000));
-    calcNeighborEncoderOutput();
-    calcSelfEncoderOutput();
-    calcMlpOutput();
+    vTaskDelay(M2T(10));
+    feedForwardNN(thrusts);
   }
 }

@@ -1,13 +1,25 @@
 #include "../include/vec.h"
+#include <math.h>
 
-void  addVecf(float* dst, float* src, int sz)
+Vector3  addVecf(Vector3 vec1, Vector3 vec2)
 {
+    Vector3 result = {
+                    .x=vec1.x+vec2.x,         
+                    .y=vec1.y+vec2.y,
+                    .z=vec1.z+vec2.z
+                    };
 
-    /*perform addition of two vectors*/
-    for(int k = 0; k < sz; k++)
-    {
-        dst[k] += src[k];
-    }
+    return result;
+}
+
+Vector3 negateVec(Vector3 vec)
+{
+    return (Vector3){.x=-vec.x, .y=-vec.y, .z=-vec.z};
+}   
+
+Vector3  substractVec(Vector3 from, Vector3 to)
+{
+    return addVecf(from, negateVec(to));
 }
 
 void  scaleVec(float* dst, float scl, int len)
@@ -32,4 +44,14 @@ float clipVal(float val, float min, float max)
         return val;
     }
     
+}
+
+float calcNormf(Vector3 vec)
+{
+    return sqrtf(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
+
+float calcDistf(Vector3 vec1, Vector3 vec2)
+{
+    return calcNormf(substractVec(vec1, vec2));
 }

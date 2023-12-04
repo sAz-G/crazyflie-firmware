@@ -1,6 +1,7 @@
 #ifndef __NEIGHBOR_ENCOODER_H__
 #define __NEIGHBOR_ENCOODER_H__
 
+#include "../include/neighbor_observation.h"
 // structure constants
 #define NEIGHBOR_NETWORK_OUT                    8
 #define PSI_ETA_H                               6
@@ -11,31 +12,7 @@
 #define NEIGHB_ENCODER_B                        {PSI_ETA_V, PSI_ETA_V};
 
 
-typedef struct _NEIGHB_OBS
-{
-    union 
-    {
-        struct 
-        {
-            float px;
-            float py;
-            float pz;
-            float vx;
-            float vy;
-            float vz;
-        };
-        float neighb_obs_arr[PSI_ETA_H];
-    };
-    
-}neighbor_obs;
 
-typedef struct _NEIGHBOR_VECS
-{
-    neighbor_obs* obsStruct;
-    float* e_j;
-}neighborVecs;
-
-
-void calcNeighborEncoderOutput(float*);
+void calcNeighborEncoderOutput(neighb_obs* inp, float* outp);
 
 #endif

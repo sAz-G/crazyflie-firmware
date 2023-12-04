@@ -7,14 +7,17 @@
 
 typedef struct _INPUTOUTPUT
 {
-
-    float inputVec[PHI_A_H];
     float out0[OUTPUT0];
     float phi_a[PHI_A_V];
-
 }inpOutVec;
 
+typedef struct MLPINPUT
+{
+    int len;
+    float inputVec[PHI_A_H];
 
-void calcMlpOutput();
+}mlpInput;
+
+void calcMlpOutput(mlpInput* inp , float* out);
 
 #endif
