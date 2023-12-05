@@ -108,7 +108,7 @@ struct selfObservationLimit
   };
 
 static self_obs  selfObservation;
-static Vector3 targetPos;
+static Vector3 targetPos = {.x = 0, .y = 0 , .z= .4};
 static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
