@@ -124,12 +124,10 @@ static void feedForwardPsiEta0(float* inp, int raw)
         temp += psi_eta_w0[raw][k]*inp[k];
     }
 
-    for(int k = 0; k < sz; k++)
-    {
-        temp += psi_eta_b0[k];
-    }
+    
+    temp += psi_eta_b0[raw];
 
-    encoderVecs.out0[raw] = temp;
+    encoderVecs.out0[raw] = temp >= 0 ? temp : 0;
 }
 
 static void feedForwardPsiEta1(float* inp, int raw)
@@ -142,12 +140,9 @@ static void feedForwardPsiEta1(float* inp, int raw)
         temp += psi_eta_w1[raw][k]*inp[k];
     }
 
-    for(int k = 0; k < sz; k++)
-    {
-        temp += psi_eta_b1[k];
-    }
+    temp += psi_eta_b1[raw];
 
-    encoderVecs.out1[raw] = temp;
+    encoderVecs.out1[raw] = temp >= 0 ? temp : 0;
 }
 
 
