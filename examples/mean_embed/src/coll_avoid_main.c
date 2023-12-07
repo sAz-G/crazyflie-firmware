@@ -46,19 +46,21 @@
 #include "configblock.h"
 #include "stabilizer_types.h"
 #include "commander.h"
+#include "../include/coll_avoid_main.h"
 
 
 
-uint8_t state = 0;
+static uint8_t    state = 0;
 static float      thrusts[4];
-static int32_t    thrustsToMotor[4];
+static int16_t    thrustsToMotor[4];
 static uint64_t   timer = 0;
 static PacketData ownPacket;
-static uint8_t isHighLevelController = 1;
+static uint8_t    isHighLevelController = 1;
+static uint8_t isMeanEmbed = 0;
 
-static void communicate();
-
-static void communicate()
+void communicate();
+ 
+void communicate()
 {
   if (timer == ownPacket.id)
   {
@@ -72,7 +74,7 @@ static void communicate()
   }
 }
 
-void getThrusts(int32_t* thrst)
+void getThrusts(int16_t* thrst)
 {
   thrst[0] = thrustsToMotor[0];
   thrst[1] = thrustsToMotor[1];
@@ -80,26 +82,23 @@ void getThrusts(int32_t* thrst)
   thrst[3] = thrustsToMotor[3];
 }
 
-int8_t isHighLevel()
+uint8_t isHighLevel()
 {
   return isHighLevelController;
 }
 
-void appMain() {
+void appMain() { // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
 
   uint64_t address = configblockGetRadioAddress();
   uint8_t my_id =(uint8_t)((address) & 0x00000000ff);
   ownPacket.id = my_id;
   static setpoint_t setpoint;
   static Vector3 lastPosition; 
- 
-
-
 
   while(1) {
     vTaskDelay(M2T(10));
     lastPosition = getPosition();
-    communicate();
+    //communicate();
     timer++;
 
     if(timer >= N_DRONES)
@@ -120,36 +119,53 @@ void appMain() {
 
           setpoint.position.x = lastPosition.x;
           setpoint.position.y = lastPosition.y;
-          setpoint.position.z = .4f;
+          setpoint.position.z = .9f;
 
 
           commanderSetSetpoint(&setpoint, 3);
         }
         else{
+          if(!isMeanEmbed)
+          {
+            consolePrintf("entered app main mean embed \n");
+            isMeanEmbed = 1;
+          }
           feedForwardNN(thrusts);
           for(int k = 0; k < 4; k++)
           {
-            thrustsToMotor[k] = (int32_t)((1<<31)*thrusts[k]);
+            thrustsToMotor[k] = (int16_t)(INT16_MAX*thrusts[k]);
           }
         }
       break;
     case 2: // land
-        isHighLevelController = 1;
-        setpoint.mode.x       = modeAbs;
-        setpoint.mode.y       = modeAbs;
-        setpoint.mode.z       = modeAbs; 
 
-        setpoint.position.x   = lastPosition.x;
-        setpoint.position.y   = lastPosition.y;
-        setpoint.position.z   = .05f;
-
-        if(getPosition().z < 0.15f)
+        if(isHighLevel())
         {
-          setpoint.mode.x = modeDisable;
-          setpoint.mode.y = modeDisable;
-          setpoint.mode.z = modeDisable;
+          setpoint.mode.x       = modeAbs;
+          setpoint.mode.y       = modeAbs;
+          setpoint.mode.z       = modeAbs; 
+
+          setpoint.position.x   = lastPosition.x;
+          setpoint.position.y   = lastPosition.y;
+          setpoint.position.z   = .05f;
+
+          if(getPosition().z < 0.15f)
+          {
+            setpoint.mode.x = modeDisable;
+            setpoint.mode.y = modeDisable;
+            setpoint.mode.z = modeDisable;
+
+            state = 0;
+          }
+          commanderSetSetpoint(&setpoint, 3);
         }
-        commanderSetSetpoint(&setpoint, 3);
+        else{
+          for(int k = 0; k < 4; k++)
+          {
+            thrustsToMotor[k] = (int16_t)(INT16_MAX*0);
+          }
+        }
+        
       break;
     default:
       break;
@@ -158,10 +174,20 @@ void appMain() {
 }
 
 PARAM_GROUP_START(ctrlnn)
-//PARAM_ADD(PARAM_FLOAT, flt, &dbgflt)
-PARAM_ADD(PARAM_UINT8, stt, &state)
-PARAM_ADD(PARAM_UINT8, id,  &(ownPacket.id))
+PARAM_ADD(PARAM_FLOAT, thrst1, &thrusts[0])
+PARAM_ADD(PARAM_FLOAT, thrst2, &thrusts[1])
+PARAM_ADD(PARAM_FLOAT, thrst3, &thrusts[2])
+PARAM_ADD(PARAM_FLOAT, thrst4, &thrusts[3])
+PARAM_ADD(PARAM_UINT8, stt,    &state)
+PARAM_ADD(PARAM_UINT8, id,     &(ownPacket.id))
 PARAM_ADD(PARAM_UINT8, controller,  &isHighLevelController)
 //PARAM_ADD(PARAM_INT32, int, &dbgint)
 PARAM_GROUP_STOP(ctrlnn)
 
+
+LOG_GROUP_START(logNN)
+LOG_ADD(LOG_FLOAT, thrst1, &thrusts[0])
+LOG_ADD(LOG_FLOAT, thrst2, &thrusts[2])
+LOG_ADD(LOG_FLOAT, thrst3, &thrusts[3])
+LOG_ADD(LOG_FLOAT, thrst4, &thrusts[4])
+LOG_GROUP_STOP(logNN)

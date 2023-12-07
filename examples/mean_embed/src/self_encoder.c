@@ -66,23 +66,23 @@ static void feedForwardSelfEncoder(float* inp, float* dst)
 
 
 static void  feedForwardPsiS(float* inp, float* dst)
-{
+{//YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+
     float out0[getSelfEncoderOutput0Size()];
     for(int k = 0; k < getSelfEncoderOutputSize(); k++)
     {
         feedForwardPsiS0(inp, out0, k);
     }   
 
-    float out1[getSelfEncoderOutput0Size()];
     for(int k = 0; k < getSelfEncoderOutputSize(); k++)
     {
-        feedForwardPsiS1(out0, out1, k);
+        feedForwardPsiS1(out0, dst, k);
     }   
 }
 
 
 static void feedForwardPsiS0(float* inp, float* out, int raw)
-{
+{//YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
     int sz        = getEncoderInputSize();
     float temp    = 0.0;    
 
@@ -95,7 +95,7 @@ static void feedForwardPsiS0(float* inp, float* out, int raw)
 }
 
 static void feedForwardPsiS1(float* inp, float* out, int raw)
-{
+{//YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
     int sz        = getSelfEncoderOutputSize();
     float temp    = 0.0;    
 

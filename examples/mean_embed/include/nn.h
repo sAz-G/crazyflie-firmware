@@ -11,7 +11,7 @@ typedef struct _NN_INPUT_OUTPUT_
 }nnInputOutput;
 
 
-void feedForwardNN();
+void feedForwardNN(float*);
 int getMyId();
 
 

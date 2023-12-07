@@ -19,6 +19,7 @@
         "string_view": "c",
         "self_encoder.h": "c",
         "neighbor_encoder.h": "c",
-        "nn.h": "c"
+        "nn.h": "c",
+        "coll_avoid_main.h": "c"
     }
 }

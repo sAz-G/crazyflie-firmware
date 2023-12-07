@@ -56,7 +56,7 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
 
         
     }
-    else if((collectedK < 6) && (collectedK > 1)) // if collected information from more than 6 neighbors
+    else if((collectedK < 6) && (collectedK > 1)) 
     {
         kNearestArr[collectedK].relPos = substractVec(ownPos, newPos);
         kNearestArr[collectedK].relVel = substractVec(ownVel, newVel);

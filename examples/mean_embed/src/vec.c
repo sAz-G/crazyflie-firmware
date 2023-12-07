@@ -31,7 +31,7 @@ void  scaleVec(float* dst, float scl, int len)
 }
 
 float clipVal(float val, float min, float max)
-{
+{// checked
     if(val < min)
     {
         return min;

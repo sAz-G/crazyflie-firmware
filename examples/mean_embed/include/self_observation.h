@@ -49,12 +49,10 @@
 #define  MINW2  -MAXW2
 #define  MINW3  -MAXW3
 
+
 typedef struct _SELF_OBS
 {
-    union 
-    {
-        struct 
-        {
+    
             float px;
             float py;
             float pz;
@@ -76,13 +74,9 @@ typedef struct _SELF_OBS
             float wx;
             float wy;
             float wz;
-        };
-        float self_obs_arr[SELFOBSERVATIONSIZE];
-    };
-
-    int obsLen;
-    
+       
 }self_obs;
+
 
 void updateSelfObservation(self_obs*);
 Vector3 getPosition(void);

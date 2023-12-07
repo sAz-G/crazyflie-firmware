@@ -25,7 +25,7 @@
  */
 
 #include "power_distribution.h"
-
+#include "debug.h"
 #include <string.h>
 #include "log.h"
 #include "param.h"
@@ -33,7 +33,7 @@
 #include "autoconf.h"
 #include "config.h"
 #include "math.h"
-#include "/home/saz/GitHub/masterthesis_crazyflie/examples/mean_embed/include/coll_avoid_main.h"
+#include "/home/saz/GitHub/masterthesis_crazyflie/examples/test_mean_embed/include/coll_avoid_main.h"
 
 #ifndef CONFIG_MOTORS_DEFAULT_IDLE_THRUST
 #  define DEFAULT_IDLE_THRUST 0
@@ -48,6 +48,9 @@ static float thrustToTorque = 0.005964552f;
 // thrust = a * pwm^2 + b * pwm
 static float pwmToThrustA = 0.091492681f;
 static float pwmToThrustB = 0.067673604f;
+
+
+static void powerDistributionNN(const int16_t *control, motors_thrust_uncapped_t* motorThrustUncapped);
 
 int powerDistributionMotorType(uint32_t id)
 {
@@ -88,7 +91,7 @@ static void powerDistributionLegacy(const control_t *control, motors_thrust_unca
   motorThrustUncapped->motors.m4 = control->thrust + r + p - control->yaw;
 }
 
-static void powerDistributionNN(const int32_t *control, motors_thrust_uncapped_t* motorThrustUncapped)
+static void powerDistributionNN(const int16_t *control, motors_thrust_uncapped_t* motorThrustUncapped)
 {
   motorThrustUncapped->motors.m1 = control[0];
   motorThrustUncapped->motors.m2 = control[1];
@@ -136,7 +139,7 @@ void powerDistribution(const control_t *control, motors_thrust_uncapped_t* motor
       }
       else
       {
-        int32_t thrsts[4];
+        int16_t thrsts[4];
         getThrusts(thrsts);
         powerDistributionNN(thrsts,motorThrustUncapped);
       }

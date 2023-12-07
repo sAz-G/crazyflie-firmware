@@ -136,10 +136,6 @@ static void  feedForwardMLP(float*);
 static void  feedForwardPhiA0(float*, int);
 static void  feedForwardPhiA1(float*, int);
 
-static  int  getInputMlpSize();
-static  int  getOutputMlpSize();
-static  int  getOutput0MlpSize();
-
 void calcMlpOutput(mlpInput* input, float* out)
 {
 
@@ -152,15 +148,13 @@ void calcMlpOutput(mlpInput* input, float* out)
 
 static void feedForwardMLP(float* inp)
 {
-    int sz0 = getOutput0MlpSize();
-    int sz1 = getOutputMlpSize();
 
-    for(int k = 0; k < sz0; k++)
+    for(int k = 0; k < 32; k++)
     {
         feedForwardPhiA0(inp, k);
     }
 
-    for(int k = 0; k < sz1; k++)
+    for(int k = 0; k < 4; k++)
     {
         feedForwardPhiA1(networkVecs->out0, k);
     }
@@ -169,10 +163,9 @@ static void feedForwardMLP(float* inp)
 
 static void feedForwardPhiA0(float* inp, int raw)
 {
-    int sz          = getInputMlpSize();
     float tmp       = 0;
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < 24; k++)
     {
       tmp += inp[k]*phi_a_w0[raw][k];
     }
@@ -183,32 +176,15 @@ static void feedForwardPhiA0(float* inp, int raw)
 
 static void feedForwardPhiA1(float* inp, int raw)
 {
-  int sz         = getInputMlpSize();
   float tmp      = 0;
-
-  for(int k = 0; k < sz; k++)
+  for(int k = 0; k < 24; k++)
   {
     tmp += inp[k]*phi_a_w1[raw][k];
   }
-
-  //networkVecs->phi_a[raw]   = (tmp +  phi_a_b1[raw]) >= 0 ? tmp +  phi_a_b1[raw] : 0;
   networkVecs->phi_a[raw]   = tmp + phi_a_b1[raw];
-
 }
 
-static int getInputMlpSize()
-{
-    return (int)PHI_A_H;
-}
 
-static int getOutput0MlpSize()
-{
-    return (int)OUTPUT0;
-}
 
-static int getOutputMlpSize()
-{
-    return (int)PHI_A_V;
-}
 
 

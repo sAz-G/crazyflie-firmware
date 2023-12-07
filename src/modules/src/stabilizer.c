@@ -119,9 +119,9 @@ Vector3 getVelocity()
 
 Vector3 getAngularVelocity()
 {
-  float wx = ((float)stateCompressed.vx)/1000.0f;
-  float wy = ((float)stateCompressed.vy)/1000.0f;
-  float wz = ((float)stateCompressed.vz)/1000.0f;
+  float wx = ((float)stateCompressed.rateRoll)/1000.0f;
+  float wy = ((float)stateCompressed.ratePitch)/1000.0f;
+  float wz = ((float)stateCompressed.rateYaw)/1000.0f;
 
   Vector3 w;
 

@@ -4,7 +4,7 @@
 #include "stabilizer_types.h"
 #include "stabilizer.h"
 #include "../include/vec.h"
-
+#include "param.h"
 /* min max values
  EnvInfo(obs_space=Dict('obs': Box([-10. -10. -10.  -3.  -3.  -3.  -1.  -1.  -1.  -1.  -1.  -1.  -1.  -1.
   -1. -40. -40. -40. -10. -10. -10.  -6.  -6.  -6. -10. -10. -10.  -6.
@@ -73,15 +73,15 @@ struct selfObservationLimit
   (float) MAXPOSY,
   (float) MAXPOSZ,
 
-  (float) MAXR1,
-  (float) MAXR2,
-  (float) MAXR3,
-  (float) MAXR4,
-  (float) MAXR5,
-  (float) MAXR6,
-  (float) MAXR7,
-  (float) MAXR8,
-  (float) MAXR9,
+  1.0f,
+  1.0f,
+  1.0f,
+  1.0f,
+  1.0f,
+  1.0f,
+  1.0f,
+  1.0f,
+  1.0f,
 
   (float)MAXW1,
   (float)MAXW2,
@@ -90,31 +90,34 @@ struct selfObservationLimit
   (float)MINVELX,
   (float)MINVELY,
   (float)MINVELZ,
+
   (float)MINPOSX,
   (float)MINPOSY,
   (float)MINPOSZ,
-  (float)MINR1,
-  (float)MINR2,
-  (float)MINR3,
-  (float)MINR4,
-  (float)MINR5,
-  (float)MINR6,
-  (float)MINR7,
-  (float)MINR8,
-  (float)MINR9,
+
+  -1.0f,
+  -1.0f,
+  -1.0f,
+  -1.0f,
+  -1.0f,
+  -1.0f,
+  -1.0f,
+  -1.0f,
+  -1.0f,
+
   (float)MINW1,
   (float)MINW2,
   (float)MINW3
   };
 
-static self_obs  selfObservation;
-static Vector3 targetPos = {.x = 0, .y = 0 , .z= .4};
+//static self_obs  selfObservation;
+static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= .4f};
 static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
 
 void updateSelfObservation(self_obs* slfObs)
-{
+{// YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYy
     // get position  
     Vector3 ownPos = getPosition();
     clipPosition(&ownPos);
@@ -129,27 +132,28 @@ void updateSelfObservation(self_obs* slfObs)
     estimatorKalmanGetEstimatedRot(rotationMat);
     clipOrientation(rotationMat);
 
-    selfObservation.px = targetPos.x - ownPos.x;
-    selfObservation.py = targetPos.y - ownPos.y;
-    selfObservation.pz = targetPos.z - ownPos.z;
+    slfObs->px = targetPos.x - ownPos.x;
+    slfObs->py = targetPos.y - ownPos.y;
+    slfObs->pz = targetPos.z - ownPos.z;
 
-    selfObservation.vx = ownVel.x;
-    selfObservation.vy = ownVel.y;
-    selfObservation.vz = ownVel.z;
+    slfObs->vx = ownVel.x;
+    slfObs->vy = ownVel.y;
+    slfObs->vz = ownVel.z;
 
-    selfObservation.wx = ownAngVel.x;
-    selfObservation.wy = ownAngVel.y;
-    selfObservation.wz = ownAngVel.z;
+    slfObs->wx = ownAngVel.x;
+    slfObs->wy = ownAngVel.y;
+    slfObs->wz = ownAngVel.z;
 
-    selfObservation.r1 = ownAngVel.x;
-    selfObservation.r2 = ownAngVel.y;
-    selfObservation.r3 = ownAngVel.z;
-    selfObservation.r4 = ownAngVel.x;
-    selfObservation.r5 = ownAngVel.y;
-    selfObservation.r6 = ownAngVel.z;
-    selfObservation.r7 = ownAngVel.x;
-    selfObservation.r8 = ownAngVel.y;
-    selfObservation.r9 = ownAngVel.z;
+    slfObs->r1 = rotationMat[0];
+    slfObs->r2 = rotationMat[1];
+    slfObs->r3 = rotationMat[2];
+    slfObs->r4 = rotationMat[3];
+    slfObs->r5 = rotationMat[4];
+    slfObs->r6 = rotationMat[5];
+    slfObs->r7 = rotationMat[6];
+    slfObs->r8 = rotationMat[7];
+    slfObs->r9 = rotationMat[8];
+
 }
 
 void clipPosition(Vector3* pos)
@@ -202,11 +206,20 @@ Vector3 getVeloc(void)
 
 
 
+PARAM_GROUP_START(selfobs)
+PARAM_ADD(PARAM_FLOAT, xt, &targetPos.x)
+PARAM_ADD(PARAM_FLOAT, yt, &targetPos.y)
+PARAM_ADD(PARAM_FLOAT, zt, &targetPos.z)
+PARAM_GROUP_STOP(selfobs)
 
 
-
-
-
+/*
+LOG_GROUP_START(selfObsLog)
+LOG_ADD(LOG_FLOAT, thrst1, &thrusts[0])
+LOG_ADD(LOG_FLOAT, thrst2, &thrusts[2])
+LOG_ADD(LOG_FLOAT, thrst3, &thrusts[3])
+LOG_ADD(LOG_FLOAT, thrst4, &thrusts[4])
+LOG_GROUP_STOP(selfObsLog)*/
 
 
 
