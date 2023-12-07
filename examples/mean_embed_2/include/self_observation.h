@@ -78,7 +78,7 @@ typedef struct _SELF_OBS
 }self_obs;
 
 
-void updateSelfObservation(self_obs*);
+void updateSelfObservation(float*);
 Vector3 getPosition(void);
 Vector3 getVeloc(void);
 void clipPosition(Vector3*);

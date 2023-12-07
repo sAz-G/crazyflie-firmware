@@ -55,7 +55,7 @@ static float      thrusts[4];
 static int16_t    thrustsToMotor[4];
 static uint64_t   timer = 0;
 static PacketData ownPacket;
-static uint8_t    isHighLevelController = 1;
+static uint8_t    isHighLevelController = 0;
 static uint8_t isMeanEmbed = 0;
 
 void communicate();
@@ -87,7 +87,7 @@ uint8_t isHighLevel()
   return isHighLevelController;
 }
 
-void appMain() { // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+void appMain() { 
 
   uint64_t address = configblockGetRadioAddress();
   uint8_t my_id =(uint8_t)((address) & 0x00000000ff);
@@ -127,13 +127,12 @@ void appMain() { // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
         else{
           if(!isMeanEmbed)
           {
-            consolePrintf("entered app main mean embed \n");
+            //consolePrintf("entered app main mean embed \n");
             isMeanEmbed = 1;
           }
-          feedForwardNN(thrusts);
           for(int k = 0; k < 4; k++)
           {
-            thrustsToMotor[k] = (int16_t)(INT16_MAX*thrusts[k]);
+            thrustsToMotor[k] = (int16_t)(INT16_MAX*(thrusts[k]*2.0f));
           }
         }
       break;
@@ -160,9 +159,15 @@ void appMain() { // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
           commanderSetSetpoint(&setpoint, 3);
         }
         else{
-          for(int k = 0; k < 4; k++)
+          
+
+          if(getPosition().z < 0.15f)
           {
-            thrustsToMotor[k] = (int16_t)(INT16_MAX*0);
+            for(int k = 0; k < 4; k++)
+            {
+               thrustsToMotor[k] = (int16_t)(INT16_MAX*(0.0f));
+            }
+            state = 0;
           }
         }
         
@@ -170,6 +175,8 @@ void appMain() { // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     default:
       break;
     }
+    feedForwardNN(thrusts);
+
   }
 }
 
@@ -189,5 +196,5 @@ LOG_GROUP_START(logNN)
 LOG_ADD(LOG_FLOAT, thrst1, &thrusts[0])
 LOG_ADD(LOG_FLOAT, thrst2, &thrusts[2])
 LOG_ADD(LOG_FLOAT, thrst3, &thrusts[3])
-LOG_ADD(LOG_FLOAT, thrst4, &thrusts[4])
+LOG_ADD(LOG_FLOAT, thrst4, &thrusts[1])
 LOG_GROUP_STOP(logNN)

@@ -116,7 +116,7 @@ static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
 
-void updateSelfObservation(self_obs* slfObs)
+void updateSelfObservation(float* slfObs)
 {// YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYy
     // get position  
     Vector3 ownPos = getPosition();
@@ -132,27 +132,27 @@ void updateSelfObservation(self_obs* slfObs)
     estimatorKalmanGetEstimatedRot(rotationMat);
     clipOrientation(rotationMat);
 
-    slfObs->px = targetPos.x - ownPos.x;
-    slfObs->py = targetPos.y - ownPos.y;
-    slfObs->pz = targetPos.z - ownPos.z;
+    slfObs[0] = targetPos.x - ownPos.x;
+    slfObs[1] = targetPos.y - ownPos.y;
+    slfObs[2] = targetPos.z - ownPos.z;
 
-    slfObs->vx = ownVel.x;
-    slfObs->vy = ownVel.y;
-    slfObs->vz = ownVel.z;
+    slfObs[3] = ownVel.x;
+    slfObs[4] = ownVel.y;
+    slfObs[5] = ownVel.z;
 
-    slfObs->wx = ownAngVel.x;
-    slfObs->wy = ownAngVel.y;
-    slfObs->wz = ownAngVel.z;
+    slfObs[15] = ownAngVel.x;
+    slfObs[16] = ownAngVel.y;
+    slfObs[17] = ownAngVel.z;
 
-    slfObs->r1 = rotationMat[0];
-    slfObs->r2 = rotationMat[1];
-    slfObs->r3 = rotationMat[2];
-    slfObs->r4 = rotationMat[3];
-    slfObs->r5 = rotationMat[4];
-    slfObs->r6 = rotationMat[5];
-    slfObs->r7 = rotationMat[6];
-    slfObs->r8 = rotationMat[7];
-    slfObs->r9 = rotationMat[8];
+    slfObs[6]  = rotationMat[0];
+    slfObs[7]  = rotationMat[1];
+    slfObs[8]  = rotationMat[2];
+    slfObs[9]  = rotationMat[3];
+    slfObs[10] = rotationMat[4];
+    slfObs[11] = rotationMat[5];
+    slfObs[12] = rotationMat[6];
+    slfObs[13] = rotationMat[7];
+    slfObs[14] = rotationMat[8];
 
 }
 
@@ -160,14 +160,14 @@ void clipPosition(Vector3* pos)
 {
     pos->x = clipVal(pos->x, obsLimit.minPosx, obsLimit.maxPosx);
     pos->y = clipVal(pos->y, obsLimit.minPosy, obsLimit.maxPosy);
-    pos->x = clipVal(pos->x, obsLimit.minPosx, obsLimit.maxPosx);
+    pos->z = clipVal(pos->x, obsLimit.minPosz, obsLimit.maxPosz);
 }
 
 void clipVelocity(Vector3* vel)
 {
     vel->x = clipVal(vel->x, obsLimit.minVelx, obsLimit.maxVelx);
     vel->y = clipVal(vel->y, obsLimit.minVely, obsLimit.maxVely);
-    vel->x = clipVal(vel->x, obsLimit.minVelx, obsLimit.maxVelx);
+    vel->z = clipVal(vel->z, obsLimit.minVelz, obsLimit.maxVelz);
 }
 
 static void clipOrientation(float* orientArr)
