@@ -50,7 +50,7 @@ static float pwmToThrustA = 0.091492681f;
 static float pwmToThrustB = 0.067673604f;
 
 
-static void powerDistributionNN(const int16_t *control, motors_thrust_uncapped_t* motorThrustUncapped);
+static void powerDistributionNN(const uint16_t *control, motors_thrust_uncapped_t* motorThrustUncapped);
 
 int powerDistributionMotorType(uint32_t id)
 {
@@ -91,7 +91,7 @@ static void powerDistributionLegacy(const control_t *control, motors_thrust_unca
   motorThrustUncapped->motors.m4 = control->thrust + r + p - control->yaw;
 }
 
-static void powerDistributionNN(const int16_t *control, motors_thrust_uncapped_t* motorThrustUncapped)
+static void powerDistributionNN(const uint16_t *control, motors_thrust_uncapped_t* motorThrustUncapped)
 {
   motorThrustUncapped->motors.m1 = control[0];
   motorThrustUncapped->motors.m2 = control[1];
@@ -139,7 +139,7 @@ void powerDistribution(const control_t *control, motors_thrust_uncapped_t* motor
       }
       else
       {
-        int16_t thrsts[4];
+        uint16_t thrsts[4];
         getThrusts(thrsts);
         powerDistributionNN(thrsts,motorThrustUncapped);
       }

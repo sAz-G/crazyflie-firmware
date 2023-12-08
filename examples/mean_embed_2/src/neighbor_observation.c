@@ -7,15 +7,18 @@
 
 
 
-static void checkAmountAdded();
+//static void checkAmountAdded();
 
 static PacketData   neighborInfo[N_DRONES];
 
 static bool isInit = false;
-static int collectedK           = 0;
-static int farthestNeighbor     = 0;
+//static int collectedK           = 0;
+//static int farthestNeighbor     = 0;
 static int lastAdded            = 0;
-static int collectedList[6]     = {-1,-1,-1,-1,-1,-1};
+//static int collectedList[6]     = {-1,-1,-1,-1,-1,-1};
+//static uint8_t isprinted        = 0;
+//static uint8_t amountDrones     = N_DRONES;
+//static uint8_t amountneighbors  = 1;
 
 void p2pcallbackHandler(P2PPacket *p)
 {
@@ -27,7 +30,6 @@ void p2pcallbackHandler(P2PPacket *p)
 
 void updateNeighbObservation(neighb_obs* kNearestArr)
 {   
-
     if(!isInit)
     {
         p2pRegisterCB(p2pcallbackHandler);
@@ -36,16 +38,32 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
 
     Vector3 ownPos = getPosition();
     Vector3 ownVel = getVeloc();
-    Vector3 newPos = neighborInfo[lastAdded].pos;
-    Vector3 newVel = neighborInfo[lastAdded].vel;
 
+
+    kNearestArr[0].relPos = negateVec(ownPos);
+    kNearestArr[0].relVel = negateVec(ownVel);
+
+    clipPosition(&(kNearestArr[0].relPos));
+    clipVelocity(&(kNearestArr[0].relVel));
+
+    /*
     checkAmountAdded();
     if(collectedK == 0)
     {
+        if(!isprinted)
+        {
+            consolePrintf("collected 0 neighbor \n");
+            isprinted = 1;
+        }
         return;
     }
     else if(collectedK == 1)
     {
+        if(!isprinted)
+        {
+            consolePrintf("collected 1 neighbor \n");
+            isprinted = 1;
+        }
         kNearestArr[0].relPos = substractVec(ownPos, newPos);
         kNearestArr[0].relVel = substractVec(ownVel, newVel);
 
@@ -53,11 +71,14 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
         clipVelocity(&(kNearestArr[0].relVel));
         
         farthestNeighbor              = 0;
-
-        
     }
     else if((collectedK < 6) && (collectedK > 1)) 
     {
+        if(!isprinted)
+        {
+            consolePrintf("collected 1 neighbor \n");
+            isprinted = 1;
+        }   
         kNearestArr[collectedK].relPos = substractVec(ownPos, newPos);
         kNearestArr[collectedK].relVel = substractVec(ownVel, newVel);
 
@@ -98,9 +119,9 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
             }
         }
 
-    }
+    }*/
 }
-
+/*
 static void checkAmountAdded()
 {
     
@@ -128,4 +149,4 @@ static void checkAmountAdded()
    }
 
    collectedK = amountAdded;
-}
+}*/

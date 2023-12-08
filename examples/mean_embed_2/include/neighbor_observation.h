@@ -24,18 +24,8 @@
 
 typedef struct _NEIGHB_OBS
 {
-    union 
-    {
-        struct 
-        {
-            Vector3 relPos;
-            Vector3 relVel;
-        };
-        Vector3 neighb_obs_arr[NEIGHBOROBSSIZE];
-    };
-
-    int obsLen;
-    
+    Vector3 relPos;
+    Vector3 relVel;
 }neighb_obs;
 
 typedef struct _PacketData

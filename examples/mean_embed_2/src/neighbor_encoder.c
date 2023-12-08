@@ -5,12 +5,7 @@
 
 // static variables 
 //////////////////////////////////////// WEIGHTS /////////////////////////////////////////////////
-typedef struct ENCODER_VECTORS
-{
-    float inp[6];
-    float out0[8];
-    float out1[8];
-}encoderVectors;
+
 
 static const float psi_eta_w0[PSI_ETA_V][PSI_ETA_H] = {{ 0.5417, -0.6794, -0.6421,  0.0920, -0.2375, -0.1385},
                                                        { 0.5207, -0.7076, -0.4285, -0.1278,  0.3393, -0.1915},
@@ -54,10 +49,11 @@ static const float psi_eta_b1[PSI_ETA_V] = { 0.2088,  0.2443,  0.2780,  0.1496, 
 
 
 
-static encoderVectors encoderVecs;
+static float inp[6];
+static float out0[(int)NEIGHBOR_NETWORK_OUT];
+static float out1[(int)NEIGHBOR_NETWORK_OUT];
 
-
-static const int   KNeighbors = (int)K_NEIGHBORS;
+static const int   KNeighbors = 1; //(int)K_NEIGHBORS;
 
 // static functions
 static void         calcMean(float*);
@@ -75,6 +71,13 @@ static void         addVectors(float* arr1, float* arr2, int len);
 
 void calcNeighborEncoderOutput(neighb_obs* inp, float* outp)
 {
+    for(int k = 0; k< (int)NEIGHBOR_NETWORK_OUT; k++)
+    {
+        out1[k] = 0.0f;
+        out0[k] = 0.0f;
+        outp[k] = 0.0f;
+    }
+
     feedForwardNeighborEncoder(inp, outp);
 }
 
@@ -85,7 +88,7 @@ static void feedForwardNeighborEncoder(neighb_obs* inp, float* outpEncoder)
     for(int k = 0; k < sz; k++)
     {
         feedForwardPsiEta(inp[k]);    
-        addVectors(encoderVecs.out1,outpEncoder,8);
+        addVectors(out1,outpEncoder,(int)NEIGHBOR_NETWORK_OUT);
     }
     
     calcMean(outpEncoder);
@@ -95,21 +98,21 @@ static void feedForwardPsiEta(neighb_obs obsK)
 {
     int sz       = (int)PSI_ETA_V;
 
-    encoderVecs.inp[0] = obsK.relPos.x;
-    encoderVecs.inp[1] = obsK.relPos.y;
-    encoderVecs.inp[2] = obsK.relPos.z;
-    encoderVecs.inp[3] = obsK.relVel.x;
-    encoderVecs.inp[4] = obsK.relVel.y;
-    encoderVecs.inp[5] = obsK.relVel.z;
+    inp[0] = obsK.relPos.x;
+    inp[1] = obsK.relPos.y;
+    inp[2] = obsK.relPos.z;
+    inp[3] = obsK.relVel.x;
+    inp[4] = obsK.relVel.y;
+    inp[5] = obsK.relVel.z;
 
     for(int k = 0; k < sz; k++)
     {
-        feedForwardPsiEta0(encoderVecs.inp, k);
+        feedForwardPsiEta0(inp, k);
     }
 
     for(int k = 0; k < sz; k++)
     {
-        feedForwardPsiEta1(encoderVecs.out0, k);
+        feedForwardPsiEta1(out0, k);
     }
 
 }
@@ -127,7 +130,7 @@ static void feedForwardPsiEta0(float* inp, int raw)
     
     temp += psi_eta_b0[raw];
 
-    encoderVecs.out0[raw] = temp >= 0 ? temp : 0;
+    out0[raw] = temp >= 0 ? temp : 0;
 }
 
 static void feedForwardPsiEta1(float* inp, int raw)
@@ -141,8 +144,7 @@ static void feedForwardPsiEta1(float* inp, int raw)
     }
 
     temp += psi_eta_b1[raw];
-
-    encoderVecs.out1[raw] = temp >= 0 ? temp : 0;
+    out1[raw] = temp >= 0 ? temp : 0;
 }
 
 
@@ -150,7 +152,7 @@ static void calcMean(float* networkOut)
 {
     float scalar;
 
-    if(getAmountKNeighbors() == 0.0)
+    if(getAmountKNeighbors() == 0)
     {
         scalar  = 1.0;
     }

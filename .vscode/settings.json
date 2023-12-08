@@ -20,6 +20,7 @@
         "self_encoder.h": "c",
         "neighbor_encoder.h": "c",
         "nn.h": "c",
-        "coll_avoid_main.h": "c"
+        "coll_avoid_main.h": "c",
+        "mlp.h": "c"
     }
 }

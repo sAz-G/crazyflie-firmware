@@ -16,10 +16,8 @@ static float thrusts_out[4];
 static float outputSelf[16];
 static float outputNeighbor[8];
  
-
 static float mlpInput[24];
-static neighb_obs kNearestObservations[6];
-
+static neighb_obs kNearestObservations[1];
 
 void feedForwardNN(float* thrusts)
 {
@@ -45,8 +43,6 @@ void feedForwardNN(float* thrusts)
       thrusts[k] = 0.5f*(clipVal(thrusts[k], -1.0f, 1.0f)+1.0f);
       thrusts_out[k] = thrusts[k];
     }
-
-
 
 }
 
