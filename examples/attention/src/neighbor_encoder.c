@@ -5,64 +5,59 @@
 
 // static variables 
 //////////////////////////////////////// WEIGHTS /////////////////////////////////////////////////
+static const float psi_e_w0[PSI_E_OUT][PSI_E_INP];
+static const float psi_e_b0[PSI_E_OUT];
+static const float psi_e_w1[PSI_E_OUT][PSI_E_OUT];
+static const float psi_e_b1[PSI_E_OUT];
 
 
-static const float psi_eta_w0[PSI_ETA_V][PSI_ETA_H] = {{ 0.5417, -0.6794, -0.6421,  0.0920, -0.2375, -0.1385},
-                                                       { 0.5207, -0.7076, -0.4285, -0.1278,  0.3393, -0.1915},
-                                                       { 0.4607, -0.6019, -0.3728, -0.3768,  0.4533,  0.2590},
-                                                       { 0.5416, -0.5736,  0.0822, -0.4494,  0.4473,  0.0059},
-                                                       {-0.0306, -0.1329,  0.1382,  0.1680, -0.0375, -0.3448},
-                                                       {-0.4118,  0.3257,  0.2667, -0.4095, -0.0998, -0.2194},
-                                                       { 0.8233, -0.1962,  0.1271, -0.1577, -0.2611,  0.2663},
-                                                       { 0.3432, -0.3766, -0.7890,  0.0856,  0.2210,  0.2198}};
+static const float psi_h_w0[PSI_H_OUT][PSI_ALPHA_INP];
+static const float psi_h_b0[PSI_H_OUT];
+static const float psi_h_w1[PSI_H_OUT][PSI_H_OUT];
+static const float psi_h_b1[PSI_H_OUT];
 
 
-
-static const float psi_eta_w1[PSI_ETA_V][PSI_ETA_V] =  {{-3.2516e-02, -3.8135e-01,  2.4380e-01, -3.0701e-01, -1.7432e-01, 3.5791e-01,  2.9315e-01, -1.3260e-01},
-                                                        { 1.2666e-03,  2.2348e-01,  3.3893e-01, -6.0730e-01,  3.4299e-01, -6.8567e-01, -1.1741e+00, -3.3565e-01},
-                                                        {-8.4525e-01, -6.0548e-01, -5.9543e-01,  4.0336e-02, -2.1229e-01, -2.7084e-01, -2.0249e-01,  2.6816e-01},
-                                                        { 3.0907e-01,  1.4779e-01, -5.6850e-01,  3.8580e-01, -1.3173e-01, 5.4307e-01, -2.3703e-01, -5.3131e-01},
-                                                        {-5.9161e-01,  3.2005e-02,  4.0227e-01,  4.1339e-01, -2.2896e-02, -1.7285e-02, -2.4415e-01, -4.6611e-01},
-                                                        {-7.8942e-02,  3.7274e-01,  4.5881e-01, -2.9711e-01,  5.6955e-01, -2.3767e-01, -1.8596e-01, -8.4011e-01},
-                                                        {-7.7198e-01, -5.1864e-01,  5.4855e-01, -1.8149e-01,  4.5347e-01, -7.9741e-02, -7.5352e-02, -1.6073e-01},
-                                                        {-8.1760e-01, -2.0768e-01,  3.6510e-01,  1.9212e-01, -7.1986e-04, 4.5544e-02, -1.7139e-01, -4.4614e-01}};
+static const float psi_alpha_w0[PSI_ALPHA_HID][PSI_ALPHA_INP];
+static const float psi_alpha_b0[PSI_ALPHA_HID];
+static const float psi_alpha_w1[PSI_ALPHA_HID][PSI_ALPHA_HID];
+static const float psi_alpha_b1[PSI_ALPHA_HID];
+static const float psi_alpha_w2[PSI_ALPHA_HID];
+static const float psi_alpha_b2;
 
 
+static float inp[PSI_E_INP];
+static float outE0[PSI_E_OUT];
+static float outE1[K_NEIGHBORS][PSI_E_OUT];
+
+static float outH0[PSI_H_OUT];
+static float outH1[PSI_H_OUT];
+
+static float outAlpha0[PSI_ALPHA_HID];
+static float outAlpha1[PSI_ALPHA_HID];
+static float outAlphaVec[K_NEIGHBORS];
+
+static float outMean[PSI_E_OUT];
 
 
-
-
-
-static const float psi_eta_b0[PSI_ETA_V] = { 0.0905,  0.1520, -0.1166,  0.0220,  0.2115,  0.0347,  0.1080,  0.1474};
-
-
-
-
-
-
-
-
-static const float psi_eta_b1[PSI_ETA_V] = { 0.2088,  0.2443,  0.2780,  0.1496, -0.0144,  0.1181,  0.1876,  0.2691};
-
-
-
-
-
-
-static float inp[6];
-static float out0[(int)NEIGHBOR_NETWORK_OUT];
-static float out1[(int)NEIGHBOR_NETWORK_OUT];
-
-static const int   KNeighbors = 1; //(int)K_NEIGHBORS;
+static const int   KNeighbors = K_NEIGHBORS;
 
 // static functions
-static void         calcMean(float*);
-static int          getAmountKNeighbors();
-static int          getAmountOutputs();
+static void         calcMean();
 static void         feedForwardNeighborEncoder(neighb_obs* inp, float* outp);
-static void         feedForwardPsiEta(neighb_obs obsK);
-static void         feedForwardPsiEta0(float* inp, int raw);
-static void         feedForwardPsiEta1(float* inp, int raw);
+
+static void         feedForwardPsiE(neighb_obs obsK, int neighb);
+static void         feedForwardPsiE0(float* inp, int raw);
+static void         feedForwardPsiE1(float* inp, int raw, int neighb);
+
+static void         feedForwardPsiH(float*);
+static void         feedForwardPsiH0(float* inp, int raw);
+static void         feedForwardPsiH1(float* inp, int raw);
+
+static void         feedForwardPsiAlpha(float*, int);
+static void         feedForwardPsiAlpha0(float* inp, int raw);
+static void         feedForwardPsiAlpha1(float* inp, int raw);
+static void         feedForwardPsiAlpha2(float* inp, int raw);
+
 static void         addVectors(float* arr1, float* arr2, int len);
 
 
@@ -71,32 +66,62 @@ static void         addVectors(float* arr1, float* arr2, int len);
 
 void calcNeighborEncoderOutput(neighb_obs* inp, float* outp)
 {
-    for(int k = 0; k< (int)NEIGHBOR_NETWORK_OUT; k++)
+    for(int k = 0; k < PSI_E_OUT; k++)
     {
-        out1[k] = 0.0f;
-        out0[k] = 0.0f;
+        outE0[k] = 0.0f;
+
+        outE1[0][k] = 0.0f;
+        outE1[1][k] = 0.0f;
+        outE1[2][k] = 0.0f;
+        outE1[3][k] = 0.0f;
+        outE1[4][k] = 0.0f;
+        outE1[5][k] = 0.0f;
+
+        outH0[k] = 0.0f;
+        outH1[k] = 0.0f;
+
+        outAlpha0[k] = 0.0f;
+        outAlpha1[k] = 0.0f;
+
         outp[k] = 0.0f;
     }
 
+    for(int u = 0; u < K_NEIGHBORS; u++)
+    {
+        outAlphaVec[u] = 0.0f;
+    }
+
+    
     feedForwardNeighborEncoder(inp, outp);
 }
 
 static void feedForwardNeighborEncoder(neighb_obs* inp, float* outpEncoder)
 {
-    int sz = getAmountKNeighbors();
+    for(int k = 0; k < K_NEIGHBORS; k++)
+    {    // calc e output 
+        feedForwardPsiE(inp[k], k);    
+    }   
 
-    for(int k = 0; k < sz; k++)
-    {
-        feedForwardPsiEta(inp[k]);    
-        addVectors(out1,outpEncoder,(int)NEIGHBOR_NETWORK_OUT);
-    }
-    
-    calcMean(outpEncoder);
+    calcMean(outpEncoder); // calc mean
+
+    for(int k = 0; k < K_NEIGHBORS; k++)
+    { // calc alpha output
+        feedForwardPsiAlpha(outE1[k], k);    
+    }   
+
+    for(int k = 0; k < K_NEIGHBORS; k++)
+    { // calc h output and final output
+        feedForwardPsiH(outE1[k]);  
+
+        for(int u = 0; u < PSI_H_OUT; u++)
+        {
+            outpEncoder[u] = outpEncoder[u] + outAlphaVec[k]*outH1[u];
+        }  
+    }   
 }
 
-static void feedForwardPsiEta(neighb_obs obsK)
+static void feedForwardPsiE(neighb_obs obsK, int neighb)
 {
-    int sz       = (int)PSI_ETA_V;
 
     inp[0] = obsK.relPos.x;
     inp[1] = obsK.relPos.y;
@@ -105,74 +130,168 @@ static void feedForwardPsiEta(neighb_obs obsK)
     inp[4] = obsK.relVel.y;
     inp[5] = obsK.relVel.z;
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_E_OUT; k++)
     {
-        feedForwardPsiEta0(inp, k);
+        feedForwardPsiE0(inp, k);
     }
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_E_OUT; k++)
     {
-        feedForwardPsiEta1(out0, k);
+        feedForwardPsiE1(outE0, k, neighb);
     }
 
 }
 
-static void feedForwardPsiEta0(float* inp, int raw)
+static void feedForwardPsiE0(float* inp, int raw)
 {
-    int   sz     = (int)PSI_ETA_H;
     float temp   = 0.0F;    
-
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_E_OUT; k++)
     {
-        temp += psi_eta_w0[raw][k]*inp[k];
+        temp += psi_e_w0[raw][k]*inp[k];
     }
 
     
-    temp += psi_eta_b0[raw];
+    temp += psi_e_b0[raw];
 
-    out0[raw] = temp >= 0 ? temp : 0;
+    outE0[raw] = temp >= 0 ? temp : 0;
 }
 
-static void feedForwardPsiEta1(float* inp, int raw)
+static void feedForwardPsiE1(float* inp, int raw, int neighb)
 {
-    int sz        = (int)PSI_ETA_V;
     float temp    = 0.0F;
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_E_OUT; k++)
     {
-        temp += psi_eta_w1[raw][k]*inp[k];
+        temp += psi_e_w1[raw][k]*inp[k];
     }
 
-    temp += psi_eta_b1[raw];
-    out1[raw] = temp >= 0 ? temp : 0;
+    temp += psi_e_b1[raw];
+    outE1[neighb][raw] = temp >= 0 ? temp : 0;
 }
 
-
-static void calcMean(float* networkOut)
+static void feedForwardPsiAlpha(float* inp, int kNeighb)
 {
-    float scalar;
+    float inpAlpha[PSI_ALPHA_INP];
 
-    if(getAmountKNeighbors() == 0)
+    inpAlpha[0] = inp[0];
+    inpAlpha[1] = inp[1];
+    inpAlpha[2] = inp[2];
+    inpAlpha[3] = inp[3];
+    inpAlpha[4] = inp[4];
+    inpAlpha[5] = inp[5];
+    inpAlpha[6] = inp[6];
+    inpAlpha[7] = inp[7];
+
+    inpAlpha[8] = outMean[0];
+    inpAlpha[9] = outMean[1];
+    inpAlpha[10] = outMean[2];
+    inpAlpha[11] = outMean[3];
+    inpAlpha[12] = outMean[4];
+    inpAlpha[13] = outMean[5];
+    inpAlpha[14] = outMean[6];
+    inpAlpha[15] = outMean[7];
+
+    for(int k = 0; k < PSI_ALPHA_HID; k++)
     {
-        scalar  = 1.0;
+        feedForwardPsiAlpha0(inpAlpha, k);
     }
-    else
+
+    for(int u = 0; u < PSI_ALPHA_HID; u++)
     {
-        scalar = getAmountKNeighbors();
+        feedForwardPsiAlpha1(outAlpha0, u);
     }
 
-    scaleVec(networkOut, (1.0f)/scalar, getAmountOutputs());
+    feedForwardPsiAlpha2(outAlpha1, kNeighb);
 }
 
-static int getAmountKNeighbors()
+static void feedForwardPsiAlpha0(float* inp, int raw)
 {
-    return (int)KNeighbors;
+    float tmp = 0.0f;
+
+    for(int k = 0; k < PSI_ALPHA_INP; k++)
+    {
+        tmp += psi_alpha_w0[raw][k]*inp[k];
+    }
+    tmp += psi_alpha_b0[raw];
+    outAlpha0[raw] = tmp >= 0 ? tmp : 0;
 }
 
-static int  getAmountOutputs()
+static void feedForwardPsiAlpha1(float* inp, int raw)
 {
-    return (int)NEIGHBOR_NETWORK_OUT;
+    float tmp = 0.0f;
+
+    for(int k = 0; k < PSI_ALPHA_INP; k++)
+    {
+        tmp += psi_alpha_w1[raw][k]*inp[k];
+    }
+    tmp += psi_alpha_b1[raw];
+    outAlpha1[raw] = tmp >= 0 ? tmp : 0;
 }
+
+static void feedForwardPsiAlpha2(float* inp, int raw)
+{
+    float tmp = 0.0f;
+
+    for(int k = 0; k < PSI_ALPHA_INP; k++)
+    {
+        tmp += psi_alpha_w2[k]*inp[k];
+    }
+    tmp += psi_alpha_b2;
+    outAlphaVec[raw] = tmp >= 0 ? tmp : 0;
+}
+
+static void feedForwardPsiH(float* inp)
+{
+    for(int k = 0; k < PSI_H_OUT; k++)
+    {
+        feedForwardPsiH0(inp, k);
+    }
+
+    for(int k = 0; k < PSI_H_OUT; k++)
+    {
+        feedForwardPsiH1(outH0, k);
+    }
+}
+
+static void feedForwardPsiH0(float* inp, int raw)
+{
+    float tmp = 0.0f;
+
+    for(int k = 0; k < PSI_H_INP; k++)
+    {
+        tmp += psi_h_w0[raw][k]*inp[k];
+    }
+
+    tmp += psi_h_b0[raw];
+    outH0[raw] = tmp >= 0 ? tmp : 0;
+}
+
+static void feedForwardPsiH1(float* inp, int raw)
+{
+    float tmp = 0.0f;
+
+    for(int k = 0; k < PSI_H_OUT; k++)
+    {
+        tmp += psi_h_w1[raw][k]*inp[k];
+    }
+
+    tmp += psi_h_b1[raw];
+    outH1[raw] = tmp >= 0 ? tmp : 0;
+}
+
+static void calcMean()
+{
+    for(int k = 0; k < K_NEIGHBORS; k++)
+    {
+        addVectors(outE1[k], outMean, PSI_E_OUT);
+    }
+
+    for(int k = 0; k < K_NEIGHBORS; k++)
+    {
+        outMean[k] = outMean[k]/((float)K_NEIGHBORS);
+    }
+}
+
 
 static void addVectors(float* arr1, float* arr2, int len)
 {

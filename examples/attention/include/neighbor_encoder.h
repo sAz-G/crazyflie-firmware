@@ -3,14 +3,19 @@
 
 #include "../include/neighbor_observation.h"
 // structure constants
-#define NEIGHBOR_NETWORK_OUT                    8
-#define PSI_ETA_H                               6
-#define PSI_ETA_V                               8
+#define NEIGHBOR_NETWORK_OUT  8
 
-#define K_NEIGHBORS                             6
-#define NEIGHB_ENCODER_W                        {{PSI_ETA_V, PSI_ETA_H}, {PSI_ETA_V,PSI_ETA_V}};
-#define NEIGHB_ENCODER_B                        {PSI_ETA_V, PSI_ETA_V};
+#define PSI_E_INP             6
+#define PSI_E_OUT             8
 
+#define PSI_H_INP             8
+#define PSI_H_OUT             8
+
+#define PSI_ALPHA_INP         2*PSI_E_OUT
+#define PSI_ALPHA_HID         PSI_E_OUT
+#define PSI_ALPHA_OUT         1
+
+#define K_NEIGHBORS           6
 
 
 void calcNeighborEncoderOutput(neighb_obs* inp, float* outp);
