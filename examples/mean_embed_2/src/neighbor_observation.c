@@ -5,20 +5,11 @@
 #include <string.h>
 
 
-
-
-//static void checkAmountAdded();
-
 static PacketData   neighborInfo[N_DRONES];
 
 static bool isInit = false;
-//static int collectedK           = 0;
-//static int farthestNeighbor     = 0;
 static int lastAdded            = 0;
-//static int collectedList[6]     = {-1,-1,-1,-1,-1,-1};
-//static uint8_t isprinted        = 0;
-//static uint8_t amountDrones     = N_DRONES;
-//static uint8_t amountneighbors  = 1;
+static int farthestNeighbor = 0;
 
 void p2pcallbackHandler(P2PPacket *p)
 {
@@ -30,75 +21,39 @@ void p2pcallbackHandler(P2PPacket *p)
 
 void updateNeighbObservation(neighb_obs* kNearestArr)
 {   
+    Vector3 ownPos = getPosition();
+    Vector3 ownVel = getVeloc();
+
     if(!isInit)
     {
+        Vector3 defaultPos = {.x = 9.5f, .y = 9.5f, .z = 9.5f};
+        Vector3 defaultVel = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
+
+        for(int k = 0; k < KNEARESTAMOUNT; k++)
+        {
+            kNearestArr[k].relPos = substractVec(ownPos, defaultPos);
+            kNearestArr[k].relVel = substractVec(ownVel, defaultVel);
+            clipPosition(&(kNearestArr[k].relPos));
+            clipVelocity(&(kNearestArr[k].relVel));
+            defaultPos = (Vector3){.x = 9.5f, .y = ((float)k)*1.5f, .z = 9.5f};
+        }
+
+        for(int k = 0; k < N_DRONES; k++)
+        {
+            neighborInfo[k].pos = defaultPos;
+            neighborInfo[k].vel = defaultVel;
+            defaultPos = (Vector3){.x = 9.5f, .y = ((float)k)*1.5f, .z = 9.5f};
+        }
+
         p2pRegisterCB(p2pcallbackHandler);
         isInit = true;
     }
 
-    Vector3 ownPos = getPosition();
-    Vector3 ownVel = getVeloc();
+    Vector3 newPos = neighborInfo[lastAdded].pos;
+    Vector3 newVel = neighborInfo[lastAdded].vel;
 
-
-    kNearestArr[0].relPos = negateVec(ownPos);
-    kNearestArr[0].relVel = negateVec(ownVel);
-
-    clipPosition(&(kNearestArr[0].relPos));
-    clipVelocity(&(kNearestArr[0].relVel));
-
-    /*
-    checkAmountAdded();
-    if(collectedK == 0)
+    for(int u = 0; u < KNEARESTAMOUNT; u++)
     {
-        if(!isprinted)
-        {
-            consolePrintf("collected 0 neighbor \n");
-            isprinted = 1;
-        }
-        return;
-    }
-    else if(collectedK == 1)
-    {
-        if(!isprinted)
-        {
-            consolePrintf("collected 1 neighbor \n");
-            isprinted = 1;
-        }
-        kNearestArr[0].relPos = substractVec(ownPos, newPos);
-        kNearestArr[0].relVel = substractVec(ownVel, newVel);
-
-        clipPosition(&(kNearestArr[0].relPos));
-        clipVelocity(&(kNearestArr[0].relVel));
-        
-        farthestNeighbor              = 0;
-    }
-    else if((collectedK < 6) && (collectedK > 1)) 
-    {
-        if(!isprinted)
-        {
-            consolePrintf("collected 1 neighbor \n");
-            isprinted = 1;
-        }   
-        kNearestArr[collectedK].relPos = substractVec(ownPos, newPos);
-        kNearestArr[collectedK].relVel = substractVec(ownVel, newVel);
-
-        clipPosition(&(kNearestArr[collectedK].relPos));
-        clipVelocity(&(kNearestArr[collectedK].relVel));
-
-        Vector3 newRelPos = kNearestArr[collectedK].relPos;
-
-        for(int k = 0; k < collectedK; k++)
-        {
-            if(calcNormf(newRelPos)  < calcNormf(kNearestArr[k].relPos) )
-            {
-                farthestNeighbor = k;
-                newRelPos = kNearestArr[k].relPos;
-            }
-        }
-
-    }
-    else
-    { 
         if(calcDistf(ownPos,newPos) < calcNormf(kNearestArr[farthestNeighbor].relPos) )
         {
 
@@ -118,35 +73,6 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
                 }
             }
         }
+    }
 
-    }*/
 }
-/*
-static void checkAmountAdded()
-{
-    
-   int amountAdded  = 0;
-   int lastIsInList = 0;
-   for(int k = 0; k < 6; k++)
-   {
-        if(collectedList[k] != -1)
-        {
-            amountAdded++;
-            if(collectedList[k] == lastAdded)
-            {
-                lastIsInList = 1;
-            }
-        }
-        else 
-        {
-            if(!lastIsInList)
-            {
-                collectedList[k] = lastAdded;
-                amountAdded++;
-            }
-            break;
-        }
-   }
-
-   collectedK = amountAdded;
-}*/

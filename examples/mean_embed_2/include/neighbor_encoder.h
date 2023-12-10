@@ -8,10 +8,6 @@
 #define PSI_ETA_V                               8
 
 #define K_NEIGHBORS                             6
-#define NEIGHB_ENCODER_W                        {{PSI_ETA_V, PSI_ETA_H}, {PSI_ETA_V,PSI_ETA_V}};
-#define NEIGHB_ENCODER_B                        {PSI_ETA_V, PSI_ETA_V};
-
-
 
 void calcNeighborEncoderOutput(neighb_obs* inp, float* outp);
 

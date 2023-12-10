@@ -17,7 +17,7 @@ static float outputSelf[16];
 static float outputNeighbor[8];
  
 static float mlpInput[24];
-static neighb_obs kNearestObservations[1];
+static neighb_obs kNearestObservations[6];
 
 void feedForwardNN(float* thrusts)
 {
