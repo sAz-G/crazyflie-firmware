@@ -11,16 +11,19 @@
 #include <math.h>
 
 
+
 static float selfObservation[18];
 static float thrusts_out[4];
 static float outputSelf[16];
 static float outputNeighbor[8];
  
 static float mlpInput[24];
-static neighb_obs kNearestObservations[1];
+static neighb_obs kNearestObservations[K_NEIGHBORS];
+
 
 void feedForwardNN(float* thrusts)
 {
+
     updateSelfObservation(selfObservation);
     calcSelfEncoderOutput(selfObservation, outputSelf);
     updateNeighbObservation(kNearestObservations);

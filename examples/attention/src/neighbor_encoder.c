@@ -91,7 +91,6 @@ void calcNeighborEncoderOutput(neighb_obs* inp, float* outp)
         outAlphaVec[u] = 0.0f;
     }
 
-    
     feedForwardNeighborEncoder(inp, outp);
 }
 

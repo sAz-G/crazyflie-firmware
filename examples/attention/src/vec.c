@@ -19,7 +19,7 @@ Vector3 negateVec(Vector3 vec)
 
 Vector3  substractVec(Vector3 from, Vector3 to)
 {
-    return addVecf(from, negateVec(to));
+    return addVecf(to, negateVec(from));
 }
 
 void  scaleVec(float* dst, float scl, int len)
