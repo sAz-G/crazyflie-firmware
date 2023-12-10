@@ -33,7 +33,7 @@
 #include "autoconf.h"
 #include "config.h"
 #include "math.h"
-#include "/home/saz/GitHub/masterthesis_crazyflie/examples/mean_embed_2/include/coll_avoid_main.h"
+#include "/home/saz/GitHub/masterthesis_crazyflie/examples/attention/include/coll_avoid_main.h"
 //#include "/home/saz/GitHub/masterthesis_crazyflie/examples/attention/include/coll_avoid_main_attention.h"
 
 #ifndef CONFIG_MOTORS_DEFAULT_IDLE_THRUST

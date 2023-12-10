@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 #include "estimator.h"
-#include "/home/saz/GitHub/masterthesis_crazyflie/examples/mean_embed_2/include/vec.h"
+#include "/home/saz/GitHub/masterthesis_crazyflie/examples/attention/include/vec.h"
 
 /**
  * Initialize the stabilizer subsystem and launch the stabilizer loop task.
