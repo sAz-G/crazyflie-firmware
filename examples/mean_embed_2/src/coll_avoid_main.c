@@ -49,7 +49,7 @@
 #include "../include/coll_avoid_main.h"
 
 
-
+/*
 static uint16_t testThrust[80][4] = 
 {
 {37616,36336,38187,35198},
@@ -119,7 +119,7 @@ static uint16_t testThrust[80][4] =
 {40051,40347,46215,37672},
 {43213,39262,44173,40621},
 {43426,39671,45076,39280},
-};
+};*/
 
 
 static uint8_t    state = 0;
@@ -130,6 +130,7 @@ static PacketData ownPacket;
 static uint8_t    isHighLevelController = 0;
 static uint8_t isMeanEmbed = 0;
 static float mototrKValue = 1.0f;
+
 
 void communicate();
  
@@ -161,18 +162,20 @@ uint8_t isHighLevel()
 }
 
 void appMain() { 
-  static uint32_t testVar = 0;
   uint64_t address = configblockGetRadioAddress();
   uint8_t my_id =(uint8_t)((address) & 0x00000000ff);
   ownPacket.id = my_id;
   static setpoint_t setpoint;
   static Vector3 lastPosition; 
+  vTaskDelay(M2T(1000));
+
 
   while(1) {
-    vTaskDelay(M2T(10));
+    vTaskDelay(M2T(1));
+
+    //vTaskDelay(M2T(1))
     lastPosition = getPosition();
     //communicate();
-    timer++;
 
     if(timer >= N_DRONES)
     {
@@ -198,12 +201,7 @@ void appMain() {
           commanderSetSetpoint(&setpoint, 3);
         }
         else{
-          testVar++;
-          if(testVar > 64)
-          {
-            testVar = 0;
-            state = 2;
-          }
+
           if(!isMeanEmbed)
           {
             //consolePrintf("entered app main mean embed \n");
@@ -211,7 +209,7 @@ void appMain() {
           }
           for(int k = 0; k < 4; k++)
           {
-            thrustsToMotor[k] = testThrust[testVar][k]; //(uint16_t)(UINT16_MAX*(mototrKValue));
+            thrustsToMotor[k] = (uint16_t)(UINT16_MAX*thrusts[k]*(mototrKValue));
           }
         }
       break;
@@ -255,7 +253,6 @@ void appMain() {
       break;
     }
     feedForwardNN(thrusts);
-
   }
 }
 
