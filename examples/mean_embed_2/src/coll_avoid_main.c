@@ -163,8 +163,8 @@ uint8_t isHighLevel()
 
 void appMain() { 
   uint64_t address = configblockGetRadioAddress();
-  uint8_t my_id =(uint8_t)((address) & 0x00000000ff);
-  ownPacket.id = my_id;
+  uint8_t my_id    = (uint8_t)((address) & 0x00000000ff);
+  ownPacket.id     = my_id;
   static setpoint_t setpoint;
   static Vector3 lastPosition; 
   vTaskDelay(M2T(1000));

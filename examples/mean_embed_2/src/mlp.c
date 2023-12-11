@@ -178,7 +178,7 @@ static void feedForwardPhiA0(float* inp, int raw)
 static void feedForwardPhiA1(float* inp, int raw)
 {
   float tmp      = 0;
-  for(int k = 0; k < 24; k++)
+  for(int k = 0; k < 32; k++)
   {
     tmp += inp[k]*phi_a_w1[raw][k];
   }
