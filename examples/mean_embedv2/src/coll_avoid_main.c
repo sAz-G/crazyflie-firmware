@@ -128,8 +128,8 @@ static uint16_t    thrustsToMotor[4];
 static uint64_t   timer = 0;
 static PacketData ownPacket;
 static uint8_t    isHighLevelController = 0;
-static uint8_t isMeanEmbed = 0;
-static float mototrKValue = 1.0f;
+static uint8_t    isMeanEmbed = 0;
+static float      mototrKValue = 1.0f;
 
 
 void communicate();
