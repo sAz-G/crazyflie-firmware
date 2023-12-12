@@ -16,39 +16,39 @@ static float thrusts_out[4];
 static float outputSelf[16];
 static float outputNeighbor[8];
  
-static float mlpInput[24];
+static float      mlpInput[24];
 static neighb_obs kNearestObservations[6];
 
 void feedForwardNN(float* thrusts)
 {
     updateSelfObservation(selfObservation);
 
-    float selfO[18] =   {0.5488135,  0.71518937, 0.60276338, 0.54488318, 0.4236548,  0.64589411,
-                    0.43758721, 0.891773   ,0.96366276 ,0.38344152 ,0.79172504,  0.52889492,
-                    0.56804456, 0.92559664 ,0.07103606 ,0.0871293  ,0.0202184 ,  0.83261985};
-    for(int k = 0; k < 18; k++)
-    {
-        selfObservation[k] = selfO[k];
-    }
+    // float selfO[18] =   {0.5488135,  0.71518937, 0.60276338, 0.54488318, 0.4236548,  0.64589411,
+    //                 0.43758721, 0.891773   ,0.96366276 ,0.38344152 ,0.79172504,  0.52889492,
+    //                 0.56804456, 0.92559664 ,0.07103606 ,0.0871293  ,0.0202184 ,  0.83261985};
+    // for(int k = 0; k < 18; k++)
+    // {
+    //     selfObservation[k] = selfO[k];
+    // }
     
     calcSelfEncoderOutput(selfObservation, outputSelf);
     updateNeighbObservation(kNearestObservations);
 
-     float neighbO[6][6] = {{0.77815675, 0.87001215, 0.97861834, 0.79915856, 0.46147936, 0.78052918,},
-                            {0.11827443, 0.63992102, 0.14335329, 0.94466892, 0.52184832, 0.41466194,},
-                            {0.26455561, 0.77423369, 0.45615033, 0.56843395, 0.0187898 , 0.6176355 ,},
-                            {0.61209572, 0.616934  , 0.94374808, 0.6818203 , 0.3595079 , 0.43703195}};
+    //  float neighbO[6][6] = {{0.77815675, 0.87001215, 0.97861834, 0.79915856, 0.46147936, 0.78052918,},
+    //                         {0.11827443, 0.63992102, 0.14335329, 0.94466892, 0.52184832, 0.41466194,},
+    //                         {0.26455561, 0.77423369, 0.45615033, 0.56843395, 0.0187898 , 0.6176355 ,},
+    //                         {0.61209572, 0.616934  , 0.94374808, 0.6818203 , 0.3595079 , 0.43703195}};
     
-     for(int k = 0; k < 6; k++)
-    {
-        kNearestObservations[k].relPos.x = neighbO[k][0];
-        kNearestObservations[k].relPos.y = neighbO[k][1];
-        kNearestObservations[k].relPos.z = neighbO[k][2];
+    //  for(int k = 0; k < 6; k++)
+    // {
+    //     kNearestObservations[k].relPos.x = neighbO[k][0];
+    //     kNearestObservations[k].relPos.y = neighbO[k][1];
+    //     kNearestObservations[k].relPos.z = neighbO[k][2];
 
-        kNearestObservations[k].relVel.x = neighbO[k][3];
-        kNearestObservations[k].relVel.y = neighbO[k][4];
-        kNearestObservations[k].relVel.z = neighbO[k][5];
-    }
+    //     kNearestObservations[k].relVel.x = neighbO[k][3];
+    //     kNearestObservations[k].relVel.y = neighbO[k][4];
+    //     kNearestObservations[k].relVel.z = neighbO[k][5];
+    // }
     calcNeighborEncoderOutput(kNearestObservations, outputNeighbor);
 
     for(int k = 0; k < 16; k++)

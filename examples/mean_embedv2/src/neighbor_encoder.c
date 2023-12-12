@@ -207,8 +207,6 @@ static const int   KNeighbors = (int)K_NEIGHBORS;
 
 // static functions
 static void         calcMean(float*);
-static int          getAmountKNeighbors();
-static int          getAmountOutputs();
 static void         feedForwardNeighborEncoder(neighb_obs* inp, float* outp);
 static void         feedForwardPsiEta(neighb_obs obsK);
 static void         feedForwardPsiEta0(float* inp, int raw);
@@ -295,29 +293,9 @@ static void feedForwardPsiEta1(float* inp, int raw)
 
 static void calcMean(float* networkOut)
 {
-    float scalar;
-
-    if(getAmountKNeighbors() == 0)
-    {
-        scalar  = 1.0;
-    }
-    else
-    {
-        scalar = getAmountKNeighbors();
-    }
-
-    scaleVec(networkOut, (1.0f)/scalar, getAmountOutputs());
+    scaleVec(networkOut, 1.0f/6.0f, NEIGHBOR_NETWORK_OUT);
 }
 
-static int getAmountKNeighbors()
-{
-    return (int)KNeighbors;
-}
-
-static int  getAmountOutputs()
-{
-    return (int)NEIGHBOR_NETWORK_OUT;
-}
 
 static void addVectors(float* arr1, float* arr2, int len)
 {

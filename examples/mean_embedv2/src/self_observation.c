@@ -111,7 +111,7 @@ struct selfObservationLimit
   };
 
 //static self_obs  selfObservation;
-static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= .4f};
+static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= .0f};
 static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
@@ -120,6 +120,9 @@ void updateSelfObservation(float* slfObs)
 {// YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYy
     // get position  
     Vector3 ownPos = getPosition();
+    targetPos.x = ownPos.x;
+    targetPos.y = ownPos.y;
+
     clipPosition(&ownPos);
 
     Vector3 ownVel = getVelocity();
@@ -132,9 +135,9 @@ void updateSelfObservation(float* slfObs)
     estimatorKalmanGetEstimatedRot(rotationMat);
     clipOrientation(rotationMat);
 
-    slfObs[0] = targetPos.x - ownPos.x;
-    slfObs[1] = targetPos.y - ownPos.y;
-    slfObs[2] = targetPos.z - ownPos.z;
+    slfObs[0] = ownPos.x - targetPos.x;
+    slfObs[1] = ownPos.y - targetPos.y;
+    slfObs[2] = ownPos.z - targetPos.z;
 
     slfObs[3] = ownVel.x;
     slfObs[4] = ownVel.y;
@@ -160,7 +163,7 @@ void clipPosition(Vector3* pos)
 {
     pos->x = clipVal(pos->x, obsLimit.minPosx, obsLimit.maxPosx);
     pos->y = clipVal(pos->y, obsLimit.minPosy, obsLimit.maxPosy);
-    pos->z = clipVal(pos->x, obsLimit.minPosz, obsLimit.maxPosz);
+    pos->z = clipVal(pos->z, obsLimit.minPosz, obsLimit.maxPosz);
 }
 
 void clipVelocity(Vector3* vel)
