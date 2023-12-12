@@ -53,7 +53,7 @@ static float inp[6];
 static float out0[(int)NEIGHBOR_NETWORK_OUT];
 static float out1[(int)NEIGHBOR_NETWORK_OUT];
 
-static const int   KNeighbors = 1; //(int)K_NEIGHBORS;
+static const int   KNeighbors = (int)K_NEIGHBORS;
 
 // static functions
 static void         calcMean(float*);
@@ -71,7 +71,7 @@ static void         addVectors(float* arr1, float* arr2, int len);
 
 void calcNeighborEncoderOutput(neighb_obs* inp, float* outp)
 {
-    for(int k = 0; k< (int)NEIGHBOR_NETWORK_OUT; k++)
+    for(int k = 0; k < NEIGHBOR_NETWORK_OUT; k++)
     {
         out1[k] = 0.0f;
         out0[k] = 0.0f;
@@ -83,9 +83,8 @@ void calcNeighborEncoderOutput(neighb_obs* inp, float* outp)
 
 static void feedForwardNeighborEncoder(neighb_obs* inp, float* outpEncoder)
 {
-    int sz = getAmountKNeighbors();
-
-    for(int k = 0; k < sz; k++)
+    
+    for(int k = 0; k < K_NEIGHBORS; k++)
     {
         feedForwardPsiEta(inp[k]);    
         addVectors(out1,outpEncoder,(int)NEIGHBOR_NETWORK_OUT);
@@ -96,8 +95,6 @@ static void feedForwardNeighborEncoder(neighb_obs* inp, float* outpEncoder)
 
 static void feedForwardPsiEta(neighb_obs obsK)
 {
-    int sz       = (int)PSI_ETA_V;
-
     inp[0] = obsK.relPos.x;
     inp[1] = obsK.relPos.y;
     inp[2] = obsK.relPos.z;
@@ -105,12 +102,12 @@ static void feedForwardPsiEta(neighb_obs obsK)
     inp[4] = obsK.relVel.y;
     inp[5] = obsK.relVel.z;
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_ETA_V; k++)
     {
         feedForwardPsiEta0(inp, k);
     }
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_ETA_V; k++)
     {
         feedForwardPsiEta1(out0, k);
     }
@@ -119,10 +116,9 @@ static void feedForwardPsiEta(neighb_obs obsK)
 
 static void feedForwardPsiEta0(float* inp, int raw)
 {
-    int   sz     = (int)PSI_ETA_H;
     float temp   = 0.0F;    
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_ETA_H; k++)
     {
         temp += psi_eta_w0[raw][k]*inp[k];
     }
@@ -135,10 +131,9 @@ static void feedForwardPsiEta0(float* inp, int raw)
 
 static void feedForwardPsiEta1(float* inp, int raw)
 {
-    int sz        = (int)PSI_ETA_V;
     float temp    = 0.0F;
 
-    for(int k = 0; k < sz; k++)
+    for(int k = 0; k < PSI_ETA_V; k++)
     {
         temp += psi_eta_w1[raw][k]*inp[k];
     }

@@ -22,8 +22,33 @@ static neighb_obs kNearestObservations[6];
 void feedForwardNN(float* thrusts)
 {
     updateSelfObservation(selfObservation);
+
+    /*float selfO[18] =   {0.5488135,  0.71518937, 0.60276338, 0.54488318, 0.4236548,  0.64589411,
+                    0.43758721, 0.891773   ,0.96366276 ,0.38344152 ,0.79172504,  0.52889492,
+                    0.56804456, 0.92559664 ,0.07103606 ,0.0871293  ,0.0202184 ,  0.83261985};*/
+    for(int k = 0; k < 18; k++)
+    {
+        selfObservation[k] = selfO[k];
+    }
+    
     calcSelfEncoderOutput(selfObservation, outputSelf);
     updateNeighbObservation(kNearestObservations);
+
+     /*float neighbO[6][6] = {{0.77815675, 0.87001215, 0.97861834, 0.79915856, 0.46147936, 0.78052918,},
+                            {0.11827443, 0.63992102, 0.14335329, 0.94466892, 0.52184832, 0.41466194,},
+                            {0.26455561, 0.77423369, 0.45615033, 0.56843395, 0.0187898 , 0.6176355 ,},
+                            {0.61209572, 0.616934  , 0.94374808, 0.6818203 , 0.3595079 , 0.43703195}};*/
+    
+     for(int k = 0; k < 6; k++)
+    {
+        kNearestObservations[k].relPos.x = neighbO[k][0];
+        kNearestObservations[k].relPos.y = neighbO[k][1];
+        kNearestObservations[k].relPos.z = neighbO[k][2];
+
+        kNearestObservations[k].relVel.x = neighbO[k][3];
+        kNearestObservations[k].relVel.y = neighbO[k][4];
+        kNearestObservations[k].relVel.z = neighbO[k][5];
+    }
     calcNeighborEncoderOutput(kNearestObservations, outputNeighbor);
 
     for(int k = 0; k < 16; k++)
@@ -113,3 +138,8 @@ LOG_ADD(LOG_FLOAT, mlp7, &(mlpInput[6]))
 LOG_ADD(LOG_FLOAT, mlp8, &(mlpInput[7]))
 LOG_GROUP_STOP(mlpNet)
 
+
+/*
+{{relPos = {x = 0.43612361, y = 0.411226243, z = 0.564345956}, relVel = {x = 0.0732458681, y = 0.635959864, z = 0.774004281}}, {relPos = {x = 0.976625443, y = 0.632692397, z = 0.55660677}, relVel = {x = 0.633000076, y = 0.963036358, z = 0.367442966}}, {relPos = {x = 0.0508353412, y = 0.670255601, z = 0.918097079}, relVel = {x = 0.083669588, y = 0.0781115964, z = 0.949854314}}, {relPos = {x = 0.56072408, y = 0.212242752, z = 0.951712608}, relVel = {x = 0.400482684, y = 0.554931879, z = 0.00556677999}}, {relPos = {x = 0.919300139, y = 0.166269556, z = 0.10357473}, relVel = {x = 0.545766056, y = 0.341175854, z = 0.98846215}}, {relPos = {x = 0.586700082, y = 0.165764853, z = 0.183052376}, relVel = {x = 0.220226064, y = 0.363634437, z = 0.244552955}}}
+
+*/
