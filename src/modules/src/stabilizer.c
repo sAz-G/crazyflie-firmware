@@ -132,6 +132,20 @@ Vector3 getAngularVelocity()
   return w;
 }
 
+float getYaw()
+{ 
+  return ((float)state.attitude.yaw) * (float)M_PI / 180.0f;
+}
+
+float getRoll()
+{
+  return ((float)state.attitude.roll) * (float)M_PI / 180.0f;
+}
+
+float getPitch()
+{
+  return ((float)state.attitude.pitch) * (float)M_PI / 180.0f;
+}
 
 static struct {
   // position - mm

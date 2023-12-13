@@ -47,4 +47,8 @@ bool stabilizerTest(void);
 
 Vector3 getVelocity();
 Vector3 getAngularVelocity();
+float getYaw();
+float getRoll();
+float getPitch();
+
 #endif /* STABILIZER_H_ */
