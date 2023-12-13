@@ -706,7 +706,7 @@ static void feedForwardPsiS0(float* inp, float* out, int raw)
         temp += psi_s_w0[raw][k]*inp[k];
     }
 
-    out[raw] = (temp + psi_s_b0[raw]) >= 0 ? temp + psi_s_b0[raw] : 0 ;
+    out[raw] = (temp + psi_s_b0[raw]) >= 0.0f ? temp + psi_s_b0[raw] : 0.0f;
 }
 
 static void feedForwardPsiS1(float* inp, float* out, int raw)
@@ -719,7 +719,7 @@ static void feedForwardPsiS1(float* inp, float* out, int raw)
         temp += psi_s_w1[raw][k]*inp[k];
     }
 
-    out[raw] = (temp + psi_s_b1[raw]) >= 0 ? temp + psi_s_b1[raw] : 0;
+    out[raw] = (temp + psi_s_b1[raw]) >= 0.0f ? temp + psi_s_b1[raw] : 0.0f;
 }
 
 

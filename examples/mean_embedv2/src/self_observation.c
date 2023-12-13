@@ -5,6 +5,8 @@
 #include "stabilizer.h"
 #include "../include/vec.h"
 #include "param.h"
+#include "log.h"
+
 /* min max values
  EnvInfo(obs_space=Dict('obs': Box([-10. -10. -10.  -3.  -3.  -3.  -1.  -1.  -1.  -1.  -1.  -1.  -1.  -1.
   -1. -40. -40. -40. -10. -10. -10.  -6.  -6.  -6. -10. -10. -10.  -6.
@@ -111,7 +113,7 @@ struct selfObservationLimit
   };
 
 //static self_obs  selfObservation;
-static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= .0f};
+static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= 1.036f};
 static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
@@ -144,7 +146,7 @@ void updateSelfObservation(float* slfObs)
     slfObs[5] = ownVel.z;
 
     slfObs[15] = ownAngVel.x;
-    slfObs[16] = ownAngVel.y;
+    slfObs[16] = -ownAngVel.y; // bitcraze representation is different than the standard
     slfObs[17] = ownAngVel.z;
 
     slfObs[6]  = rotationMat[0];
@@ -171,6 +173,13 @@ void clipVelocity(Vector3* vel)
     vel->x = clipVal(vel->x, obsLimit.minVelx, obsLimit.maxVelx);
     vel->y = clipVal(vel->y, obsLimit.minVely, obsLimit.maxVely);
     vel->z = clipVal(vel->z, obsLimit.minVelz, obsLimit.maxVelz);
+}
+
+void clipVelocityRel(Vector3* vel)
+{
+    vel->x = clipVal(vel->x, obsLimit.minVelx*2.0f, obsLimit.maxVelx*2.0f);
+    vel->y = clipVal(vel->y, obsLimit.minVely*2.0f, obsLimit.maxVely*2.0f);
+    vel->z = clipVal(vel->z, obsLimit.minVelz*2.0f, obsLimit.maxVelz*2.0f);
 }
 
 static void clipOrientation(float* orientArr)
@@ -216,13 +225,12 @@ PARAM_ADD(PARAM_FLOAT, zt, &targetPos.z)
 PARAM_GROUP_STOP(selfobs)
 
 
-/*
-LOG_GROUP_START(selfObsLog)
-LOG_ADD(LOG_FLOAT, thrst1, &thrusts[0])
-LOG_ADD(LOG_FLOAT, thrst2, &thrusts[2])
-LOG_ADD(LOG_FLOAT, thrst3, &thrusts[3])
-LOG_ADD(LOG_FLOAT, thrst4, &thrusts[4])
-LOG_GROUP_STOP(selfObsLog)*/
+
+LOG_GROUP_START(selfObs)
+LOG_ADD(LOG_FLOAT, xt, &targetPos.x)
+LOG_ADD(LOG_FLOAT, yt, &targetPos.y)
+LOG_ADD(LOG_FLOAT, zt, &targetPos.z)
+LOG_GROUP_STOP(selfObs)
 
 
 

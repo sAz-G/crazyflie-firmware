@@ -8,7 +8,7 @@
 static PacketData   neighborInfo[N_DRONES];
 
 static bool isInit = false;
-static int lastAdded            = 0;
+static int lastAdded        = 0;
 static int farthestNeighbor = 0;
 
 void p2pcallbackHandler(P2PPacket *p)
@@ -26,7 +26,7 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
 
     if(!isInit)
     {
-        Vector3 defaultPos = {.x = 9.5f, .y = 9.5f, .z = 9.5f};
+        Vector3 defaultPos = {.x = 9.5f, .y = 9.5f, .z = 0.0f};
         Vector3 defaultVel = {.x = 0.0f, .y = 0.0f, .z = 0.0f};
 
         for(int k = 0; k < KNEARESTAMOUNT; k++)
@@ -34,7 +34,7 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
             kNearestArr[k].relPos = substractVec(ownPos, defaultPos);
             kNearestArr[k].relVel = substractVec(ownVel, defaultVel);
             clipPosition(&(kNearestArr[k].relPos));
-            clipVelocity(&(kNearestArr[k].relVel));
+            clipVelocityRel(&(kNearestArr[k].relVel));
             defaultPos = (Vector3){.x = 9.5f, .y = ((float)k)*1.5f, .z = 9.5f};
         }
 
@@ -60,7 +60,7 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
             kNearestArr[farthestNeighbor].relPos = substractVec(ownPos, newPos);
             kNearestArr[farthestNeighbor].relVel = substractVec(ownVel, newVel);
             clipPosition(&(kNearestArr[farthestNeighbor].relPos));
-            clipVelocity(&(kNearestArr[farthestNeighbor].relVel));
+            clipVelocityRel(&(kNearestArr[farthestNeighbor].relVel));
 
             Vector3 checkPos = kNearestArr[0].relPos;
             farthestNeighbor = 0;
@@ -74,5 +74,5 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
             }
         }
     }
-
 }
+

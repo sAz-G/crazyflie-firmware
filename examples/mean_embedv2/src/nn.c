@@ -30,7 +30,18 @@ void feedForwardNN(float* thrusts)
     // {
     //     selfObservation[k] = selfO[k];
     // }
-    
+    // selfObservation[0] = selfObservation[0]/10.0f;
+    // selfObservation[1] = selfObservation[1]/10.0f;
+    // selfObservation[2] = selfObservation[2]/10.0f;
+
+    // selfObservation[3] = selfObservation[3]/3.0f;
+    // selfObservation[4] = selfObservation[4]/3.0f;
+    // selfObservation[5] = selfObservation[5]/3.0f;
+
+    // selfObservation[15] = selfObservation[15]/40.0f;
+    // selfObservation[16] = selfObservation[16]/40.0f;
+    // selfObservation[17] = selfObservation[17]/40.0f;
+
     calcSelfEncoderOutput(selfObservation, outputSelf);
     updateNeighbObservation(kNearestObservations);
 
@@ -72,39 +83,39 @@ void feedForwardNN(float* thrusts)
 }
 
 LOG_GROUP_START(selfObsLog)
-LOG_ADD(LOG_FLOAT, observedPx, &(selfObservation[0]))
-LOG_ADD(LOG_FLOAT, observedPy, &(selfObservation[1]))
-LOG_ADD(LOG_FLOAT, observedPz, &(selfObservation[2]))
-LOG_ADD(LOG_FLOAT, observedVx, &(selfObservation[3]))
-LOG_ADD(LOG_FLOAT, observedVy, &(selfObservation[4]))
-LOG_ADD(LOG_FLOAT, observedVz, &(selfObservation[5]))
-LOG_ADD(LOG_FLOAT, observedR1, &(selfObservation[6]))
-LOG_ADD(LOG_FLOAT, observedR2, &(selfObservation[7]))
-LOG_ADD(LOG_FLOAT, observedR3, &(selfObservation[8]))
-LOG_ADD(LOG_FLOAT, observedR4, &(selfObservation[9]))
-LOG_ADD(LOG_FLOAT, observedR5, &(selfObservation[10]))
-LOG_ADD(LOG_FLOAT, observedR6, &(selfObservation[11]))
-LOG_ADD(LOG_FLOAT, observedR7, &(selfObservation[12]))
-LOG_ADD(LOG_FLOAT, observedR8, &(selfObservation[13]))
-LOG_ADD(LOG_FLOAT, observedR9, &(selfObservation[14]))
-LOG_ADD(LOG_FLOAT, observedWx, &(selfObservation[15]))
-LOG_ADD(LOG_FLOAT, observedWy, &(selfObservation[16]))
-LOG_ADD(LOG_FLOAT, observedWz, &(selfObservation[17]))
+LOG_ADD(LOG_FLOAT, Px,         &(selfObservation[0]))
+LOG_ADD(LOG_FLOAT, Py,         &(selfObservation[1]))
+LOG_ADD(LOG_FLOAT, Pz,         &(selfObservation[2]))
+LOG_ADD(LOG_FLOAT, Vx,         &(selfObservation[3]))
+LOG_ADD(LOG_FLOAT, Vy,         &(selfObservation[4]))
+LOG_ADD(LOG_FLOAT, Vz,         &(selfObservation[5]))
+LOG_ADD(LOG_FLOAT, R1,         &(selfObservation[6]))
+LOG_ADD(LOG_FLOAT, R2,         &(selfObservation[7]))
+LOG_ADD(LOG_FLOAT, R3,         &(selfObservation[8]))
+LOG_ADD(LOG_FLOAT, R4,         &(selfObservation[9]))
+LOG_ADD(LOG_FLOAT, R5,         &(selfObservation[10]))
+LOG_ADD(LOG_FLOAT, R6,         &(selfObservation[11]))
+LOG_ADD(LOG_FLOAT, R7,         &(selfObservation[12]))
+LOG_ADD(LOG_FLOAT, R8,         &(selfObservation[13]))
+LOG_ADD(LOG_FLOAT, R9,         &(selfObservation[14]))
+LOG_ADD(LOG_FLOAT, Wx,         &(selfObservation[15]))
+LOG_ADD(LOG_FLOAT, Wy,         &(selfObservation[16]))
+LOG_ADD(LOG_FLOAT, Wz,         &(selfObservation[17]))
 
 LOG_ADD(LOG_FLOAT, t0, &(thrusts_out[0]))
 LOG_ADD(LOG_FLOAT, t1, &(thrusts_out[1]))
 LOG_ADD(LOG_FLOAT, t2, &(thrusts_out[2]))
 LOG_ADD(LOG_FLOAT, t3, &(thrusts_out[3]))
 
-LOG_ADD(LOG_FLOAT, os1, &(outputSelf[0]))
-LOG_ADD(LOG_FLOAT, os2, &(outputSelf[1]))
-LOG_ADD(LOG_FLOAT, os3, &(outputSelf[2]))
-LOG_ADD(LOG_FLOAT, os4, &(outputSelf[3]))
-LOG_ADD(LOG_FLOAT, os5, &(outputSelf[4]))
-LOG_ADD(LOG_FLOAT, os6, &(outputSelf[5]))
-LOG_ADD(LOG_FLOAT, os7, &(outputSelf[6]))
-LOG_ADD(LOG_FLOAT, os8, &(outputSelf[7]))
-LOG_ADD(LOG_FLOAT, os9, &(outputSelf[8]))
+LOG_ADD(LOG_FLOAT, os1,  &(outputSelf[0]))
+LOG_ADD(LOG_FLOAT, os2,  &(outputSelf[1]))
+LOG_ADD(LOG_FLOAT, os3,  &(outputSelf[2]))
+LOG_ADD(LOG_FLOAT, os4,  &(outputSelf[3]))
+LOG_ADD(LOG_FLOAT, os5,  &(outputSelf[4]))
+LOG_ADD(LOG_FLOAT, os6,  &(outputSelf[5]))
+LOG_ADD(LOG_FLOAT, os7,  &(outputSelf[6]))
+LOG_ADD(LOG_FLOAT, os8,  &(outputSelf[7]))
+LOG_ADD(LOG_FLOAT, os9,  &(outputSelf[8]))
 LOG_ADD(LOG_FLOAT, os10, &(outputSelf[9]))
 LOG_ADD(LOG_FLOAT, os11, &(outputSelf[10]))
 LOG_ADD(LOG_FLOAT, os12, &(outputSelf[11]))

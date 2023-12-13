@@ -83,5 +83,6 @@ Vector3 getPosition(void);
 Vector3 getVeloc(void);
 void clipPosition(Vector3*);
 void clipVelocity(Vector3*);
+void clipVelocityRel(Vector3*);
 
 #endif
