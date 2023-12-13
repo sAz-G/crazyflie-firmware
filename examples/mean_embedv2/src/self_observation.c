@@ -6,6 +6,7 @@
 #include "../include/vec.h"
 #include "param.h"
 #include "log.h"
+#include <math.h>
 
 /* min max values
  EnvInfo(obs_space=Dict('obs': Box([-10. -10. -10.  -3.  -3.  -3.  -1.  -1.  -1.  -1.  -1.  -1.  -1.  -1.
@@ -134,7 +135,24 @@ void updateSelfObservation(float* slfObs)
     clipAngularVel(&ownAngVel);
 
     float rotationMat[9];
-    estimatorKalmanGetEstimatedRot(rotationMat);
+
+    float alpha = getRoll(); // alpha
+    float beta = getPitch(); // beta
+    float gamma = getYaw(); // gamma
+
+    rotationMat[0] =  cosf(beta)*cosf(gamma);
+    rotationMat[1] =  cosf(beta)*sinf(gamma);
+    rotationMat[2] = -sinf(beta);
+
+    rotationMat[3] = sinf(alpha)*sinf(beta)*cosf(gamma) - cosf(alpha)*sinf(gamma);
+    rotationMat[4] = sinf(alpha)*sinf(beta)*sinf(gamma) + cosf(alpha)*cosf(gamma);
+    rotationMat[5] = sinf(alpha)*cosf(beta);
+
+    rotationMat[6] = cosf(alpha)*sinf(beta)*cosf(gamma) + sinf(alpha)*sinf(gamma);
+    rotationMat[7] = cosf(alpha)*sinf(beta)*sinf(gamma) - sinf(alpha)*cosf(gamma);
+    rotationMat[8] = cosf(alpha)*cosf(beta);
+    
+    //estimatorKalmanGetEstimatedRot(rotationMat);
     clipOrientation(rotationMat);
 
     slfObs[0] = ownPos.x - targetPos.x;
