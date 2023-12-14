@@ -50,5 +50,8 @@ Vector3 getAngularVelocity();
 float getYaw();
 float getRoll();
 float getPitch();
-
+float getqx();
+float getqy();
+float getqz();
+float getqw();
 #endif /* STABILIZER_H_ */

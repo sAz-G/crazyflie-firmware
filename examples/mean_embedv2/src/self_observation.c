@@ -19,6 +19,7 @@
 */
 //static const int selfObservationSize = (int)SELFOBSERVATIONSIZE;
 
+
 // constants variables
 struct selfObservationLimit
 {
@@ -134,8 +135,32 @@ void updateSelfObservation(float* slfObs)
     Vector3 ownAngVel = getAngularVelocity();
     clipAngularVel(&ownAngVel);
 
+    /*
+    [[1.0 - 2 * qy ** 2 - 2 * qz ** 2,     2 * qx * qy - 2 * qz * qw,             2 * qx * qz + 2 * qy * qw],
+    [2 * qx * qy + 2 * qz * qw,            1.0 - 2 * qx ** 2 - 2 * qz ** 2,       2 * qy * qz - 2 * qx * qw],
+    [2 * qx * qz - 2 * qy * qw,            2 * qy * qz + 2 * qx * qw,             1.0 - 2 * qx ** 2 - 2 * qy ** 2]]
+    */
+
     float rotationMat[9];
 
+    float qx = getqx();
+    float qy = getqy();
+    float qz = getqz();
+    float qw = getqw();
+
+    rotationMat[0] = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
+    rotationMat[1] = 2.0f * qx * qy - 2.0f * qz * qw;
+    rotationMat[2] = 2.0f * qx * qz + 2.0f * qy * qw;
+
+    rotationMat[3] = 2.0f * qx * qy + 2.0f * qz * qw;
+    rotationMat[4] = 1.0f - 2.0f * qx*qx - 2.0f * qz*qz;
+    rotationMat[5] = 2.0f * qy * qz - 2.0f * qx * qw;
+
+    rotationMat[6] = 2.0f * qx * qz - 2.0f * qy * qw;
+    rotationMat[7] = 2.0f * qy * qz + 2.0f * qx * qw;
+    rotationMat[8] = 1.0f - 2.0f * qx*qx - 2.0f * qy *qy;
+
+/*
     float alpha = getRoll(); // alpha
     float beta = -getPitch(); // beta, bitcraze representation is different than the standard
     float gamma = getYaw(); // gamma
@@ -151,7 +176,7 @@ void updateSelfObservation(float* slfObs)
     rotationMat[6] = cosf(alpha)*sinf(beta)*cosf(gamma) + sinf(alpha)*sinf(gamma);
     rotationMat[7] = cosf(alpha)*sinf(beta)*sinf(gamma) - sinf(alpha)*cosf(gamma);
     rotationMat[8] = cosf(alpha)*cosf(beta);
-    
+    */
     //estimatorKalmanGetEstimatedRot(rotationMat);
     clipOrientation(rotationMat);
 

@@ -147,6 +147,26 @@ float getPitch()
   return ((float)state.attitude.pitch) * (float)M_PI / 180.0f;
 }
 
+float getqx()
+{ 
+  return state.attitudeQuaternion.x;
+}
+
+float getqy()
+{
+  return state.attitudeQuaternion.y;
+}
+
+float getqz()
+{
+  return state.attitudeQuaternion.z;
+}
+
+float getqw()
+{
+  return state.attitudeQuaternion.w;
+}
+
 static struct {
   // position - mm
   int16_t x;
