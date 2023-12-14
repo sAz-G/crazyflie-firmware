@@ -189,13 +189,13 @@ void updateSelfObservation(float* slfObs)
     slfObs[5] = ownVel.z;
 
     slfObs[6]  = rotationMat[0];
-    slfObs[7]  = rotationMat[3];
-    slfObs[8]  = rotationMat[6];
-    slfObs[9]  = rotationMat[1];
+    slfObs[7]  = rotationMat[1];
+    slfObs[8]  = rotationMat[2];
+    slfObs[9]  = rotationMat[3];
     slfObs[10] = rotationMat[4];
-    slfObs[11] = rotationMat[7];
-    slfObs[12] = rotationMat[2];
-    slfObs[13] = rotationMat[5];
+    slfObs[11] = rotationMat[5];
+    slfObs[12] = rotationMat[6];
+    slfObs[13] = rotationMat[7];
     slfObs[14] = rotationMat[8];
 
     slfObs[15] = ownAngVel.z;
