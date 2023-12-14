@@ -4,6 +4,8 @@
 #include "../include/self_observation.h"
 #include <string.h>
 
+#include "log.h"
+
 
 static PacketData   neighborInfo[N_DRONES];
 
@@ -76,3 +78,61 @@ void updateNeighbObservation(neighb_obs* kNearestArr)
     }
 }
 
+LOG_GROUP_START(neigStt)
+LOG_ADD(LOG_FLOAT, n0px, &(neighborInfo[0].pos.x))
+LOG_ADD(LOG_FLOAT, n0py, &(neighborInfo[0].pos.y))
+LOG_ADD(LOG_FLOAT, n0pz, &(neighborInfo[0].pos.z))
+LOG_ADD(LOG_FLOAT, n0vx, &(neighborInfo[0].vel.x))
+LOG_ADD(LOG_FLOAT, n0vy, &(neighborInfo[0].vel.y))
+LOG_ADD(LOG_FLOAT, n0vz, &(neighborInfo[0].vel.z))
+
+LOG_ADD(LOG_FLOAT, n1px, &(neighborInfo[1].pos.x))
+LOG_ADD(LOG_FLOAT, n1py, &(neighborInfo[1].pos.y))
+LOG_ADD(LOG_FLOAT, n1pz, &(neighborInfo[1].pos.z))
+LOG_ADD(LOG_FLOAT, n1vx, &(neighborInfo[1].vel.x))
+LOG_ADD(LOG_FLOAT, n1vy, &(neighborInfo[1].vel.y))
+LOG_ADD(LOG_FLOAT, n1vz, &(neighborInfo[1].vel.z))
+
+LOG_ADD(LOG_FLOAT, n2px, &(neighborInfo[2].pos.x))
+LOG_ADD(LOG_FLOAT, n2py, &(neighborInfo[2].pos.y))
+LOG_ADD(LOG_FLOAT, n2pz, &(neighborInfo[2].pos.z))
+LOG_ADD(LOG_FLOAT, n2vx, &(neighborInfo[2].vel.x))
+LOG_ADD(LOG_FLOAT, n2vy, &(neighborInfo[2].vel.y))
+LOG_ADD(LOG_FLOAT, n2vz, &(neighborInfo[2].vel.z))
+
+LOG_ADD(LOG_FLOAT, n3px, &(neighborInfo[3].pos.x))
+LOG_ADD(LOG_FLOAT, n3py, &(neighborInfo[3].pos.y))
+LOG_ADD(LOG_FLOAT, n3pz, &(neighborInfo[3].pos.z))
+LOG_ADD(LOG_FLOAT, n3vx, &(neighborInfo[3].vel.x))
+LOG_ADD(LOG_FLOAT, n3vy, &(neighborInfo[3].vel.y))
+LOG_ADD(LOG_FLOAT, n3vz, &(neighborInfo[3].vel.z))
+
+LOG_ADD(LOG_FLOAT, n4px, &(neighborInfo[4].pos.x))
+LOG_ADD(LOG_FLOAT, n4py, &(neighborInfo[4].pos.y))
+LOG_ADD(LOG_FLOAT, n4pz, &(neighborInfo[4].pos.z))
+LOG_ADD(LOG_FLOAT, n4vx, &(neighborInfo[4].vel.x))
+LOG_ADD(LOG_FLOAT, n4vy, &(neighborInfo[4].vel.y))
+LOG_ADD(LOG_FLOAT, n4vz, &(neighborInfo[4].vel.z))
+
+LOG_ADD(LOG_FLOAT, n5px, &(neighborInfo[5].pos.x))
+LOG_ADD(LOG_FLOAT, n5py, &(neighborInfo[5].pos.y))
+LOG_ADD(LOG_FLOAT, n5pz, &(neighborInfo[5].pos.z))
+LOG_ADD(LOG_FLOAT, n5vx, &(neighborInfo[5].vel.x))
+LOG_ADD(LOG_FLOAT, n5vy, &(neighborInfo[5].vel.y))
+LOG_ADD(LOG_FLOAT, n5vz, &(neighborInfo[5].vel.z))
+
+LOG_ADD(LOG_FLOAT, n6px, &(neighborInfo[6].pos.x))
+LOG_ADD(LOG_FLOAT, n6py, &(neighborInfo[6].pos.y))
+LOG_ADD(LOG_FLOAT, n6pz, &(neighborInfo[6].pos.z))
+LOG_ADD(LOG_FLOAT, n6vx, &(neighborInfo[6].vel.x))
+LOG_ADD(LOG_FLOAT, n6vy, &(neighborInfo[6].vel.y))
+LOG_ADD(LOG_FLOAT, n6vz, &(neighborInfo[6].vel.z))
+
+LOG_ADD(LOG_FLOAT, n7px, &(neighborInfo[7].pos.x))
+LOG_ADD(LOG_FLOAT, n7py, &(neighborInfo[7].pos.y))
+LOG_ADD(LOG_FLOAT, n7pz, &(neighborInfo[7].pos.z))
+LOG_ADD(LOG_FLOAT, n7vx, &(neighborInfo[7].vel.x))
+LOG_ADD(LOG_FLOAT, n7vy, &(neighborInfo[7].vel.y))
+LOG_ADD(LOG_FLOAT, n7vz, &(neighborInfo[7].vel.z))
+
+LOG_GROUP_STOP(neigStt)

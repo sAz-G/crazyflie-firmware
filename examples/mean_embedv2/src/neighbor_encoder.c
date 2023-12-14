@@ -243,19 +243,19 @@ static void feedForwardNeighborEncoder(neighb_obs* inp, float* outpEncoder)
 
 static void feedForwardPsiEta(neighb_obs obsK)
 {
-    // inp[0] = obsK.relPos.x;
-    // inp[1] = obsK.relPos.y;
-    // inp[2] = obsK.relPos.z;
-    // inp[3] = obsK.relVel.x;
-    // inp[4] = obsK.relVel.y;
-    // inp[5] = obsK.relVel.z;
+    inp[0] = obsK.relPos.x;
+    inp[1] = obsK.relPos.y;
+    inp[2] = obsK.relPos.z;
+    inp[3] = obsK.relVel.x;
+    inp[4] = obsK.relVel.y;
+    inp[5] = obsK.relVel.z;
 
-    inp[0] = obsK.relPos.x/10.0f;
-    inp[1] = obsK.relPos.y/10.0f;
-    inp[2] = obsK.relPos.z/10.0f;
-    inp[3] = obsK.relVel.x/6.0f;
-    inp[4] = obsK.relVel.y/6.0f;
-    inp[5] = obsK.relVel.z/6.0f;
+    // inp[0] = obsK.relPos.x/10.0f;
+    // inp[1] = obsK.relPos.y/10.0f;
+    // inp[2] = obsK.relPos.z/10.0f;
+    // inp[3] = obsK.relVel.x/6.0f;
+    // inp[4] = obsK.relVel.y/6.0f;
+    // inp[5] = obsK.relVel.z/6.0f;
 
     for(int k = 0; k < PSI_ETA_V; k++)
     {

@@ -114,7 +114,7 @@ struct selfObservationLimit
   };
 
 //static self_obs  selfObservation;
-static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= 1.036f};
+static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= 1.0f};
 static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
 
@@ -122,9 +122,9 @@ static void clipAngularVel(Vector3*);
 void updateSelfObservation(float* slfObs)
 {// YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYy
     // get position  
-    Vector3 ownPos = getPosition();
-    targetPos.x = ownPos.x;
-    targetPos.y = ownPos.y;
+    Vector3 ownPos  = getPosition();
+    targetPos.x     = ownPos.x;
+    targetPos.y     = ownPos.y;
 
     clipPosition(&ownPos);
 
@@ -137,7 +137,7 @@ void updateSelfObservation(float* slfObs)
     float rotationMat[9];
 
     float alpha = getRoll(); // alpha
-    float beta = getPitch(); // beta
+    float beta = -getPitch(); // beta, bitcraze representation is different than the standard
     float gamma = getYaw(); // gamma
 
     rotationMat[0] =  cosf(beta)*cosf(gamma);
@@ -163,62 +163,57 @@ void updateSelfObservation(float* slfObs)
     slfObs[4] = ownVel.y;
     slfObs[5] = ownVel.z;
 
-    slfObs[15] = ownAngVel.x;
-    slfObs[16] = -ownAngVel.y; // bitcraze representation is different than the standard
-    slfObs[17] = ownAngVel.z;
-
     slfObs[6]  = rotationMat[0];
-    slfObs[7]  = rotationMat[1];
-    slfObs[8]  = rotationMat[2];
-    slfObs[9]  = rotationMat[3];
+    slfObs[7]  = rotationMat[3];
+    slfObs[8]  = rotationMat[6];
+    slfObs[9]  = rotationMat[1];
     slfObs[10] = rotationMat[4];
-    slfObs[11] = rotationMat[5];
-    slfObs[12] = rotationMat[6];
-    slfObs[13] = rotationMat[7];
+    slfObs[11] = rotationMat[7];
+    slfObs[12] = rotationMat[2];
+    slfObs[13] = rotationMat[5];
     slfObs[14] = rotationMat[8];
+
+    slfObs[15] = ownAngVel.z;
+    slfObs[16] = ownAngVel.y; 
+    slfObs[17] = ownAngVel.x;
 
 }
 
 void clipPosition(Vector3* pos)
 {
-    pos->x = clipVal(pos->x, obsLimit.minPosx, obsLimit.maxPosx);
-    pos->y = clipVal(pos->y, obsLimit.minPosy, obsLimit.maxPosy);
-    pos->z = clipVal(pos->z, obsLimit.minPosz, obsLimit.maxPosz);
+    pos->x = clipVal(pos->x, -10.0f, 10.0f);
+    pos->y = clipVal(pos->y, -10.0f, 10.0f);
+    pos->z = clipVal(pos->z, -10.0f, 10.0f);
 }
 
 void clipVelocity(Vector3* vel)
 {
-    vel->x = clipVal(vel->x, obsLimit.minVelx, obsLimit.maxVelx);
-    vel->y = clipVal(vel->y, obsLimit.minVely, obsLimit.maxVely);
-    vel->z = clipVal(vel->z, obsLimit.minVelz, obsLimit.maxVelz);
+    vel->x = clipVal(vel->x, -3.0f, 3.0f);
+    vel->y = clipVal(vel->y, -3.0f, 3.0f);
+    vel->z = clipVal(vel->z, -3.0f, 3.0f);
 }
 
 void clipVelocityRel(Vector3* vel)
 {
-    vel->x = clipVal(vel->x, obsLimit.minVelx*2.0f, obsLimit.maxVelx*2.0f);
-    vel->y = clipVal(vel->y, obsLimit.minVely*2.0f, obsLimit.maxVely*2.0f);
-    vel->z = clipVal(vel->z, obsLimit.minVelz*2.0f, obsLimit.maxVelz*2.0f);
+    vel->x = clipVal(vel->x, -3.0f*2.0f, 3.0f*2.0f);
+    vel->y = clipVal(vel->y, -3.0f*2.0f, 3.0f*2.0f);
+    vel->z = clipVal(vel->z, -3.0f*2.0f, 3.0f*2.0f);
 }
 
 static void clipOrientation(float* orientArr)
 {
-    orientArr[0] = clipVal(orientArr[0], obsLimit.minR1, obsLimit.maxR1);
-    orientArr[1] = clipVal(orientArr[1], obsLimit.minR2, obsLimit.maxR2);
-    orientArr[2] = clipVal(orientArr[2], obsLimit.minR3, obsLimit.maxR3);
-    orientArr[3] = clipVal(orientArr[3], obsLimit.minR4, obsLimit.maxR4);
-    orientArr[4] = clipVal(orientArr[4], obsLimit.minR5, obsLimit.maxR5);
-    orientArr[5] = clipVal(orientArr[5], obsLimit.minR6, obsLimit.maxR6);
-    orientArr[6] = clipVal(orientArr[6], obsLimit.minR7, obsLimit.maxR7);
-    orientArr[7] = clipVal(orientArr[7], obsLimit.minR8, obsLimit.maxR8);
-    orientArr[8] = clipVal(orientArr[8], obsLimit.minR9, obsLimit.maxR9);
+    for(int k = 0; k < 9;k ++)
+    {
+        orientArr[k] = clipVal(orientArr[k], -1, 1);
+    }
 }
 
 
 static void clipAngularVel(Vector3* angVel)
 {
-    angVel->x = clipVal(angVel->x, obsLimit.minW1, obsLimit.maxW1);
-    angVel->y = clipVal(angVel->y, obsLimit.minW2, obsLimit.maxW2);
-    angVel->z = clipVal(angVel->z, obsLimit.minW3, obsLimit.maxW3);
+    angVel->x = clipVal(angVel->x, -40, 40);
+    angVel->y = clipVal(angVel->y, -40, 40);
+    angVel->z = clipVal(angVel->z, -40, 40);
 }
 
 

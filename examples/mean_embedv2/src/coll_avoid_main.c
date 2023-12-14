@@ -124,7 +124,7 @@ static uint16_t testThrust[80][4] =
 
 static uint8_t    state = 0;
 static float      thrusts[4];
-static uint16_t    thrustsToMotor[4];
+static uint16_t   thrustsToMotor[4];
 static uint64_t   timer = 0;
 static PacketData ownPacket;
 static uint8_t    isHighLevelController = 0;

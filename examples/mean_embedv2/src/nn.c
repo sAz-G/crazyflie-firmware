@@ -30,6 +30,20 @@ void feedForwardNN(float* thrusts)
     // {
     //     selfObservation[k] = selfO[k];
     // }
+
+    selfObservation[0] = selfObservation[0];
+    selfObservation[1] = selfObservation[1];
+    selfObservation[2] = selfObservation[2];
+
+    selfObservation[3] = selfObservation[3];
+    selfObservation[4] = selfObservation[4];
+    selfObservation[5] = selfObservation[5];
+
+    selfObservation[15] = selfObservation[15];
+    selfObservation[16] = selfObservation[16];
+    selfObservation[17] = selfObservation[17];
+
+    
     // selfObservation[0] = selfObservation[0]/10.0f;
     // selfObservation[1] = selfObservation[1]/10.0f;
     // selfObservation[2] = selfObservation[2]/10.0f;
@@ -127,14 +141,48 @@ LOG_GROUP_STOP(selfObsLog)
 
 
 LOG_GROUP_START(nebOb)
-LOG_ADD(LOG_FLOAT, on1, &(outputNeighbor[0]))
-LOG_ADD(LOG_FLOAT, on2, &(outputNeighbor[1]))
-LOG_ADD(LOG_FLOAT, on3, &(outputNeighbor[2]))
-LOG_ADD(LOG_FLOAT, on4, &(outputNeighbor[3]))
-LOG_ADD(LOG_FLOAT, on5, &(outputNeighbor[4]))
-LOG_ADD(LOG_FLOAT, on6, &(outputNeighbor[5]))
-LOG_ADD(LOG_FLOAT, on7, &(outputNeighbor[6]))
-LOG_ADD(LOG_FLOAT, on8, &(outputNeighbor[7]))
+
+LOG_ADD(LOG_FLOAT, k0px, &(kNearestObservations[0].relPos.x))
+LOG_ADD(LOG_FLOAT, k0py, &(kNearestObservations[0].relPos.y))
+LOG_ADD(LOG_FLOAT, k0pz, &(kNearestObservations[0].relPos.z))
+LOG_ADD(LOG_FLOAT, k0vx, &(kNearestObservations[0].relVel.x))
+LOG_ADD(LOG_FLOAT, k0vy, &(kNearestObservations[0].relVel.y))
+LOG_ADD(LOG_FLOAT, k0vz, &(kNearestObservations[0].relVel.z))
+
+LOG_ADD(LOG_FLOAT, k1px, &(kNearestObservations[1].relPos.x))
+LOG_ADD(LOG_FLOAT, k1py, &(kNearestObservations[1].relPos.y))
+LOG_ADD(LOG_FLOAT, k1pz, &(kNearestObservations[1].relPos.z))
+LOG_ADD(LOG_FLOAT, k1vx, &(kNearestObservations[1].relVel.x))
+LOG_ADD(LOG_FLOAT, k1vy, &(kNearestObservations[1].relVel.y))
+LOG_ADD(LOG_FLOAT, k1vz, &(kNearestObservations[1].relVel.z))
+
+LOG_ADD(LOG_FLOAT, k2px, &(kNearestObservations[2].relPos.x))
+LOG_ADD(LOG_FLOAT, k2py, &(kNearestObservations[2].relPos.y))
+LOG_ADD(LOG_FLOAT, k2pz, &(kNearestObservations[2].relPos.z))
+LOG_ADD(LOG_FLOAT, k2vx, &(kNearestObservations[2].relVel.x))
+LOG_ADD(LOG_FLOAT, k2vy, &(kNearestObservations[2].relVel.y))
+LOG_ADD(LOG_FLOAT, k2vz, &(kNearestObservations[2].relVel.z))
+
+LOG_ADD(LOG_FLOAT, k3px, &(kNearestObservations[3].relPos.x))
+LOG_ADD(LOG_FLOAT, k3py, &(kNearestObservations[3].relPos.y))
+LOG_ADD(LOG_FLOAT, k3pz, &(kNearestObservations[3].relPos.z))
+LOG_ADD(LOG_FLOAT, k3vx, &(kNearestObservations[3].relVel.x))
+LOG_ADD(LOG_FLOAT, k3vy, &(kNearestObservations[3].relVel.y))
+LOG_ADD(LOG_FLOAT, k3vz, &(kNearestObservations[3].relVel.z))
+
+LOG_ADD(LOG_FLOAT, k4px, &(kNearestObservations[4].relPos.x))
+LOG_ADD(LOG_FLOAT, k4py, &(kNearestObservations[4].relPos.y))
+LOG_ADD(LOG_FLOAT, k4pz, &(kNearestObservations[4].relPos.z))
+LOG_ADD(LOG_FLOAT, k4vx, &(kNearestObservations[4].relVel.x))
+LOG_ADD(LOG_FLOAT, k4vy, &(kNearestObservations[4].relVel.y))
+LOG_ADD(LOG_FLOAT, k4vz, &(kNearestObservations[4].relVel.z))
+
+LOG_ADD(LOG_FLOAT, k5px, &(kNearestObservations[5].relPos.x))
+LOG_ADD(LOG_FLOAT, k5py, &(kNearestObservations[5].relPos.y))
+LOG_ADD(LOG_FLOAT, k5pz, &(kNearestObservations[5].relPos.z))
+LOG_ADD(LOG_FLOAT, k5vx, &(kNearestObservations[5].relVel.x))
+LOG_ADD(LOG_FLOAT, k5vy, &(kNearestObservations[5].relVel.y))
+LOG_ADD(LOG_FLOAT, k5vz, &(kNearestObservations[5].relVel.z))
 LOG_GROUP_STOP(nebOb)
 
 
