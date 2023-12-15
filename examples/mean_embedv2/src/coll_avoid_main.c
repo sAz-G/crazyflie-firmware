@@ -167,13 +167,13 @@ void appMain() {
   ownPacket.id     = my_id;
   static setpoint_t setpoint;
   static Vector3 lastPosition; 
-  vTaskDelay(M2T(1000));
+  vTaskDelay(M2T(10000));
 
 
   while(1) {
-    vTaskDelay(M2T(1));
+   // vTaskDelay(M2T(3));
 
-    //vTaskDelay(M2T(1))
+    vTaskDelay(M2T(1));
     lastPosition = getPosition();
     //communicate();
 

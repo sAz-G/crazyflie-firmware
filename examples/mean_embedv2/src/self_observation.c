@@ -5,8 +5,10 @@
 #include "stabilizer.h"
 #include "../include/vec.h"
 #include "param.h"
+#include "sensors.h"
 #include "log.h"
 #include <math.h>
+#include <math3d.h>
 
 /* min max values
  EnvInfo(obs_space=Dict('obs': Box([-10. -10. -10.  -3.  -3.  -3.  -1.  -1.  -1.  -1.  -1.  -1.  -1.  -1.
@@ -115,9 +117,12 @@ struct selfObservationLimit
   };
 
 //static self_obs  selfObservation;
-static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= 1.0f};
-static void clipOrientation(float*);
+static Vector3 targetPos = {.x = 0.f, .y = 0.f , .z= 0.5f};
+// static void clipOrientation(float*);
 static void clipAngularVel(Vector3*);
+static struct mat33 rot;
+// static sensorData_t *sensors;
+
 
 
 void updateSelfObservation(float* slfObs)
@@ -133,6 +138,11 @@ void updateSelfObservation(float* slfObs)
     clipVelocity(&ownVel);
 
     Vector3 ownAngVel = getAngularVelocity();
+
+    // sensorsAcquire(sensors);
+    // ownAngVel.x = radians(sensors->gyro.x);
+    // ownAngVel.y = radians(sensors->gyro.y);
+    // ownAngVel.z = radians(sensors->gyro.z);
     clipAngularVel(&ownAngVel);
 
     /*
@@ -141,24 +151,24 @@ void updateSelfObservation(float* slfObs)
     [2 * qx * qz - 2 * qy * qw,            2 * qy * qz + 2 * qx * qw,             1.0 - 2 * qx ** 2 - 2 * qy ** 2]]
     */
 
-    float rotationMat[9];
+    // float rotationMat[9];
 
-    float qx = getqx();
-    float qy = getqy();
-    float qz = getqz();
-    float qw = getqw();
+    // float qx = getqx();
+    // float qy = getqy();
+    // float qz = getqz();
+    // float qw = getqw();
 
-    rotationMat[0] = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
-    rotationMat[1] = 2.0f * qx * qy - 2.0f * qz * qw;
-    rotationMat[2] = 2.0f * qx * qz + 2.0f * qy * qw;
+    // rotationMat[0] = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
+    // rotationMat[1] = 2.0f * qx * qy - 2.0f * qz * qw;
+    // rotationMat[2] = 2.0f * qx * qz + 2.0f * qy * qw;
 
-    rotationMat[3] = 2.0f * qx * qy + 2.0f * qz * qw;
-    rotationMat[4] = 1.0f - 2.0f * qx*qx - 2.0f * qz*qz;
-    rotationMat[5] = 2.0f * qy * qz - 2.0f * qx * qw;
+    // rotationMat[3] = 2.0f * qx * qy + 2.0f * qz * qw;
+    // rotationMat[4] = 1.0f - 2.0f * qx*qx - 2.0f * qz*qz;
+    // rotationMat[5] = 2.0f * qy * qz - 2.0f * qx * qw;
 
-    rotationMat[6] = 2.0f * qx * qz - 2.0f * qy * qw;
-    rotationMat[7] = 2.0f * qy * qz + 2.0f * qx * qw;
-    rotationMat[8] = 1.0f - 2.0f * qx*qx - 2.0f * qy *qy;
+    // rotationMat[6] = 2.0f * qx * qz - 2.0f * qy * qw;
+    // rotationMat[7] = 2.0f * qy * qz + 2.0f * qx * qw;
+    // rotationMat[8] = 1.0f - 2.0f * qx*qx - 2.0f * qy *qy;
 
 /*
     float alpha = getRoll(); // alpha
@@ -178,7 +188,18 @@ void updateSelfObservation(float* slfObs)
     rotationMat[8] = cosf(alpha)*cosf(beta);
     */
     //estimatorKalmanGetEstimatedRot(rotationMat);
-    clipOrientation(rotationMat);
+    // clipOrientation(rotationMat);
+
+    float qx = getqx();
+    float qy = getqy();
+    float qz = getqz();
+    float qw = getqw();
+    struct quat q = mkquat(qx, 
+						   qy, 
+						   qz, 
+						   qw);
+	rot = quat2rotmat(q);
+
 
     slfObs[0] = ownPos.x - targetPos.x;
     slfObs[1] = ownPos.y - targetPos.y;
@@ -188,19 +209,29 @@ void updateSelfObservation(float* slfObs)
     slfObs[4] = ownVel.y;
     slfObs[5] = ownVel.z;
 
-    slfObs[6]  = rotationMat[0];
-    slfObs[7]  = rotationMat[1];
-    slfObs[8]  = rotationMat[2];
-    slfObs[9]  = rotationMat[3];
-    slfObs[10] = rotationMat[4];
-    slfObs[11] = rotationMat[5];
-    slfObs[12] = rotationMat[6];
-    slfObs[13] = rotationMat[7];
-    slfObs[14] = rotationMat[8];
+    // slfObs[6]  = rotationMat[0];
+    // slfObs[7]  = rotationMat[1];
+    // slfObs[8]  = rotationMat[2];
+    // slfObs[9]  = rotationMat[3];
+    // slfObs[10] = rotationMat[4];
+    // slfObs[11] = rotationMat[5];
+    // slfObs[12] = rotationMat[6];
+    // slfObs[13] = rotationMat[7];
+    // slfObs[14] = rotationMat[8];
 
-    slfObs[15] = ownAngVel.z;
-    slfObs[16] = ownAngVel.y; 
-    slfObs[17] = ownAngVel.x;
+    slfObs[6] = rot.m[0][0];
+	slfObs[7] = rot.m[0][1];
+	slfObs[8] = rot.m[0][2];
+	slfObs[9] = rot.m[1][0];
+	slfObs[10] = rot.m[1][1];
+	slfObs[11] = rot.m[1][2];
+	slfObs[12] = rot.m[2][0];
+	slfObs[13] = rot.m[2][1];
+	slfObs[14] = rot.m[2][2];
+
+    slfObs[15] = ownAngVel.x;
+    slfObs[16] = -ownAngVel.y; 
+    slfObs[17] = ownAngVel.z;
 
 }
 
@@ -225,13 +256,13 @@ void clipVelocityRel(Vector3* vel)
     vel->z = clipVal(vel->z, -3.0f*2.0f, 3.0f*2.0f);
 }
 
-static void clipOrientation(float* orientArr)
-{
-    for(int k = 0; k < 9;k ++)
-    {
-        orientArr[k] = clipVal(orientArr[k], -1, 1);
-    }
-}
+// static void clipOrientation(float* orientArr)
+// {
+//     for(int k = 0; k < 9;k ++)
+//     {
+//         orientArr[k] = clipVal(orientArr[k], -1, 1);
+//     }
+// }
 
 
 static void clipAngularVel(Vector3* angVel)

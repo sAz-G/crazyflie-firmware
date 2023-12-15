@@ -31,17 +31,6 @@ void feedForwardNN(float* thrusts)
     //     selfObservation[k] = selfO[k];
     // }
 
-    selfObservation[0] = selfObservation[0];
-    selfObservation[1] = selfObservation[1];
-    selfObservation[2] = selfObservation[2];
-
-    selfObservation[3] = selfObservation[3];
-    selfObservation[4] = selfObservation[4];
-    selfObservation[5] = selfObservation[5];
-
-    selfObservation[15] = selfObservation[15];
-    selfObservation[16] = selfObservation[16];
-    selfObservation[17] = selfObservation[17];
 
     
     // selfObservation[0] = selfObservation[0]/10.0f;
