@@ -1,0 +1,3 @@
+obj-y += coll_avoid_main.o
+obj-y += self_observation.o
+obj-y += vec.o

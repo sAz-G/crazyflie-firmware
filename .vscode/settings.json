@@ -22,6 +22,7 @@
         "nn.h": "c",
         "coll_avoid_main.h": "c",
         "mlp.h": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "math.h": "c"
     }
 }
