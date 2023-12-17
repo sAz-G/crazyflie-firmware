@@ -44,9 +44,13 @@
 #include "stabilizer_types.h"
 #include "commander.h"
 #include "estimator_kalman.h"
-
+#include "stabilizer.h"
 #include "math3d.h"
+#include "../include/vec.h"
 
+#define NGHBRS 6
+#define NGHBRSDIM 6 
+#define NDRNS 8
 
 typedef struct control_t_n {
 	float thrust_0;
@@ -55,9 +59,17 @@ typedef struct control_t_n {
 	float thrust_3;
 } control_t_n;
 
+typedef struct _PacketData
+{
+  uint8_t id;
+  Vector3 pos;
+  Vector3 vel;
+} PacketData;  // size: ? bytes + 12 bytes + 12 bytes  // max: 60 bytes
+
 void networkEvaluate(control_t_n* control_n, const float* state_array);
 int main_nn(float *outdatav);
-
+Vector3 getPosition(void);
+Vector3 getVeloc(void);
 
 float linear(float num) {
 	return num;
@@ -79,19 +91,22 @@ float relu(float num) {
 
 static const int structure [6][2] = {{6, 8},{8, 8},{18, 16},{16, 16},{24, 32},{32, 4}};
 
-static float dronesInfo[NEIGHBORS][NBR_DIM];
-static float kNearestArr[NEIGHBORS][NBR_DIM];
-static float ownTaget[3] = {0f, 0f, 1.3f};
-static        control_t_n control_n;
+static float dronesInfo[NGHBRS][NGHBRSDIM];
+static float kNearestArr[NGHBRS][NGHBRSDIM];
+static float ownTaget[3] = {.0f, 0.f, 1.3f};
 static struct mat33 rot;
 static float state_array[18];
-static const int NEIGHBORS = 6;
-static const int NBR_DIM = 6; 
-static const int NUMQUADS = 8; 
+static int state = 0;
+
+static const int NEIGHBORS = NGHBRS;
+static const int NBR_DIM = NGHBRSDIM; 
+static const int NUMQUADS = NDRNS; 
 static int farthestNeighb = 0;
 static int lastAdded = 1;
-
-
+static int timer = 0;
+static PacketData ownPacket;
+static uint16_t thrustsToMotor[4];
+uint8_t highlvl = 0;
 
 static float output_0[8];
 static float output_1[8];
@@ -100,7 +115,7 @@ static float output_3[16];
 static float inputff[24];
 static float output_4[32];
 static float output_5[4];
-
+static float mototrKValue = 1.0f;
 
 static const float actor_encoder_neighbor_encoder_embedding_mlp_0_weight[6][8] = {{0.5416633486747742,0.5207025408744812,0.4606701135635376,0.541625440120697,-0.030595339834690094,-0.41178369522094727,0.8232560157775879,0.3432365655899048},{-0.6793858408927917,-0.7075570225715637,-0.6019311547279358,-0.5736227035522461,-0.13287974894046783,0.32565295696258545,-0.19622144103050232,-0.3765560984611511},{-0.6420764327049255,-0.4285285174846649,-0.37280139327049255,0.08217182755470276,0.13821372389793396,0.26669827103614807,0.1271458864212036,-0.7889770269393921},{0.09204913675785065,-0.1277514547109604,-0.3767601549625397,-0.44940185546875,0.16801367700099945,-0.4095054864883423,-0.15770114958286285,0.08556654304265976},{-0.23749549686908722,0.33927252888679504,0.45328933000564575,0.4473400115966797,-0.03746205195784569,-0.09976258128881454,-0.26105400919914246,0.2209974229335785},{-0.13850753009319305,-0.1915159970521927,0.25898477435112,0.005928817205131054,-0.34477144479751587,-0.21939535439014435,0.266299307346344,0.2198306918144226}};
 static const float actor_encoder_neighbor_encoder_embedding_mlp_2_weight[8][8] = {{-0.03251625597476959,0.0012665789108723402,-0.8452470302581787,0.3090740144252777,-0.5916076898574829,-0.07894216477870941,-0.7719787359237671,-0.8175962567329407},{-0.38134801387786865,0.22348414361476898,-0.6054815053939819,0.14779238402843475,0.03200463578104973,0.37273523211479187,-0.5186449885368347,-0.2076832801103592},{0.24380429089069366,0.3389277458190918,-0.5954283475875854,-0.5685044527053833,0.4022670090198517,0.4588146507740021,0.5485462546348572,0.365100234746933},{-0.3070105314254761,-0.6072970628738403,0.04033582657575607,0.38580095767974854,0.41339126229286194,-0.29711103439331055,-0.18148839473724365,0.1921238899230957},{-0.17432427406311035,0.3429899215698242,-0.2122931331396103,-0.13173352181911469,-0.022895516827702522,0.5695515871047974,0.4534667134284973,-0.0007198587991297245},{0.3579081594944,-0.6856699585914612,-0.270844042301178,0.543065071105957,-0.01728454977273941,-0.23766610026359558,-0.07974095642566681,0.04554393142461777},{0.29315465688705444,-1.1740769147872925,-0.20248886942863464,-0.2370309680700302,-0.24415399134159088,-0.18596145510673523,-0.07535210251808167,-0.17138516902923584},{-0.13260476291179657,-0.33564692735671997,0.2681557536125183,-0.5313069820404053,-0.4661141037940979,-0.8401055932044983,-0.16072696447372437,-0.44614166021347046}};
@@ -229,7 +244,6 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
 
 int main_nn(float *outdatav)
 {
-    size_t i;
     control_t_n motorThrusts;
     
     point_t pt;
@@ -319,7 +333,7 @@ int main_nn(float *outdatav)
 	rot = quat2rotmat(q);
   
 	// angular velocity
-  sensrData_t sensors = getSensorData();
+  sensorData_t sensors = getSensorData();
 	float omega_roll  = radians(sensors.gyro.x);
 	float omega_pitch = radians(sensors.gyro.y);
 	float omega_yaw   = radians(sensors.gyro.z);
@@ -357,12 +371,7 @@ int main_nn(float *outdatav)
 
 
 
-
-
-
-
 void communicate();
- 
 void communicate()
 {
   if (timer == ownPacket.id)
@@ -377,26 +386,67 @@ void communicate()
   }
 }
 
+void p2pcallbackHandler(P2PPacket *p)
+{
+    PacketData received;
+    memcpy(&received, p->data, sizeof(PacketData));
+    lastAdded = received.id;
+    
+    dronesInfo[received.id][0] = received.pos.x;
+    dronesInfo[received.id][1] = received.pos.x;
+    dronesInfo[received.id][2] = received.pos.y;
+    
+    dronesInfo[received.id][3] = received.vel.x;
+    dronesInfo[received.id][4] = received.vel.y;
+    dronesInfo[received.id][5] = received.vel.z;
+
+}
+
+
+Vector3 getPosition(void)
+{
+    point_t pt;
+    estimatorKalmanGetEstimatedPos(&pt);
+    return (Vector3){.x = pt.x, .y=pt.y, .z=pt.z};
+} 
+
+Vector3 getVeloc(void)
+{
+    return getVelocity();
+}
+
+uint8_t isHighLevel()
+{
+  return highlvl;
+
+}
+
+void  getThrusts(uint16_t* trsts)
+{
+  trsts[0] = thrustsToMotor[0];
+  trsts[1] = thrustsToMotor[1];
+  trsts[2] = thrustsToMotor[2];
+  trsts[3] = thrustsToMotor[3];
+}
 
 void appMain() { 
   	// control->enableDirectThrust = true; // in the code of quadswarms they use this, why? (seems they changed the firmware)
+  vTaskDelay(M2T(10000));
+  p2pRegisterCB(p2pcallbackHandler);
 
   uint64_t address = configblockGetRadioAddress();
   uint8_t my_id    = (uint8_t)((address) & 0x00000000ff);
   ownPacket.id     = my_id;
-  static setpoint_t setpoint;
-  static Vector3 lastPosition; 
-  vTaskDelay(M2T(10000));
-  float thrusts[4] = {0f, 0f, 0f, 0f};
-
+  float thrusts[4] = {0.f, 0.f, 0.f, 0.f};
+  point_t ownPosition;
 
   while(1) {
 
     vTaskDelay(M2T(1));
-    lastPosition = getPosition();
+    estimatorKalmanGetEstimatedPos(&ownPosition);
     //communicate();
-
-    if(timer >= N_DRONES)
+    timer++;
+    if(timer >= NUMQUADS)
     {
       timer = 0;
     }
@@ -415,7 +465,7 @@ void appMain() {
       break;
     case 2: // land
 
-      if(getPosition().z < 0.15f)
+      if(ownPosition.z < 0.15f)
       {
         for(int k = 0; k < 4; k++)
         {
