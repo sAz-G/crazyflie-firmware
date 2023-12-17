@@ -46,30 +46,18 @@
 #include "estimator_kalman.h"
 #include "stabilizer.h"
 #include "math3d.h"
-#include "../include/vec.h"
+#include "../include/coll_avoid_main.h"
 
 #define NGHBRS 6
 #define NGHBRSDIM 6 
 #define NDRNS 8
 
-typedef struct control_t_n {
-	float thrust_0;
-	float thrust_1;
-	float thrust_2;
-	float thrust_3;
-} control_t_n;
-
-typedef struct _PacketData
-{
-  uint8_t id;
-  Vector3 pos;
-  Vector3 vel;
-} PacketData;  // size: ? bytes + 12 bytes + 12 bytes  // max: 60 bytes
 
 void networkEvaluate(control_t_n* control_n, const float* state_array);
 int main_nn(float *outdatav);
 Vector3 getPosition(void);
 Vector3 getVeloc(void);
+float clip(float val, float min, float max);
 
 float linear(float num) {
 	return num;
@@ -91,12 +79,6 @@ float relu(float num) {
 
 static const int structure [6][2] = {{6, 8},{8, 8},{18, 16},{16, 16},{24, 32},{32, 4}};
 
-static float dronesInfo[NGHBRS][NGHBRSDIM];
-static float kNearestArr[NGHBRS][NGHBRSDIM];
-static float ownTaget[3] = {.0f, 0.f, 1.3f};
-static struct mat33 rot;
-static float state_array[18];
-static int state = 0;
 
 static const int NEIGHBORS = NGHBRS;
 static const int NBR_DIM = NGHBRSDIM; 
@@ -105,7 +87,6 @@ static int farthestNeighb = 0;
 static int lastAdded = 1;
 static int timer = 0;
 static PacketData ownPacket;
-static uint16_t thrustsToMotor[4];
 uint8_t highlvl = 0;
 
 static float output_0[8];
@@ -115,7 +96,17 @@ static float output_3[16];
 static float inputff[24];
 static float output_4[32];
 static float output_5[4];
+
+
 static float mototrKValue = 1.0f;
+static float thrusts[4]   = {0.f, 0.f, 0.f, 0.f};
+static uint16_t thrustsToMotor[4];
+static float dronesInfo[NDRNS][NGHBRSDIM];
+static float kNearestArr[NGHBRS][NGHBRSDIM];
+static float ownTarget[3] = {.0f, 0.f, .5f};
+static struct mat33 rot;
+static float state_array[18];
+static int state = 0;
 
 static const float actor_encoder_neighbor_encoder_embedding_mlp_0_weight[6][8] = {{0.5416633486747742,0.5207025408744812,0.4606701135635376,0.541625440120697,-0.030595339834690094,-0.41178369522094727,0.8232560157775879,0.3432365655899048},{-0.6793858408927917,-0.7075570225715637,-0.6019311547279358,-0.5736227035522461,-0.13287974894046783,0.32565295696258545,-0.19622144103050232,-0.3765560984611511},{-0.6420764327049255,-0.4285285174846649,-0.37280139327049255,0.08217182755470276,0.13821372389793396,0.26669827103614807,0.1271458864212036,-0.7889770269393921},{0.09204913675785065,-0.1277514547109604,-0.3767601549625397,-0.44940185546875,0.16801367700099945,-0.4095054864883423,-0.15770114958286285,0.08556654304265976},{-0.23749549686908722,0.33927252888679504,0.45328933000564575,0.4473400115966797,-0.03746205195784569,-0.09976258128881454,-0.26105400919914246,0.2209974229335785},{-0.13850753009319305,-0.1915159970521927,0.25898477435112,0.005928817205131054,-0.34477144479751587,-0.21939535439014435,0.266299307346344,0.2198306918144226}};
 static const float actor_encoder_neighbor_encoder_embedding_mlp_2_weight[8][8] = {{-0.03251625597476959,0.0012665789108723402,-0.8452470302581787,0.3090740144252777,-0.5916076898574829,-0.07894216477870941,-0.7719787359237671,-0.8175962567329407},{-0.38134801387786865,0.22348414361476898,-0.6054815053939819,0.14779238402843475,0.03200463578104973,0.37273523211479187,-0.5186449885368347,-0.2076832801103592},{0.24380429089069366,0.3389277458190918,-0.5954283475875854,-0.5685044527053833,0.4022670090198517,0.4588146507740021,0.5485462546348572,0.365100234746933},{-0.3070105314254761,-0.6072970628738403,0.04033582657575607,0.38580095767974854,0.41339126229286194,-0.29711103439331055,-0.18148839473724365,0.1921238899230957},{-0.17432427406311035,0.3429899215698242,-0.2122931331396103,-0.13173352181911469,-0.022895516827702522,0.5695515871047974,0.4534667134284973,-0.0007198587991297245},{0.3579081594944,-0.6856699585914612,-0.270844042301178,0.543065071105957,-0.01728454977273941,-0.23766610026359558,-0.07974095642566681,0.04554393142461777},{0.29315465688705444,-1.1740769147872925,-0.20248886942863464,-0.2370309680700302,-0.24415399134159088,-0.18596145510673523,-0.07535210251808167,-0.17138516902923584},{-0.13260476291179657,-0.33564692735671997,0.2681557536125183,-0.5313069820404053,-0.4661141037940979,-0.8401055932044983,-0.16072696447372437,-0.44614166021347046}};
@@ -143,7 +134,7 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
 
   
       ///////////////////////////////// NEIGHBOR OUTPUT CALCULATION ///////////////////////////////////////////
-      float meanNeighbArr[NBR_DIM];
+      float meanNeighbArr[8];
       meanNeighbArr[0] = 0.0f;
       meanNeighbArr[1] = 0.0f;
       meanNeighbArr[2] = 0.0f;
@@ -159,7 +150,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                 output_0[i] += kNearestArr[k][j] * actor_encoder_neighbor_encoder_embedding_mlp_0_weight[j][i];
               }
               output_0[i] += actor_encoder_neighbor_encoder_embedding_mlp_0_bias[i];
-              output_0[i] = tanhf(output_0[i]);
+              //output_0[i] = tanhf(output_0[i]);
+              output_0[i] = relu(output_0[i]);
           }
       
           for (int i = 0; i < structure[1][1]; i++) {
@@ -168,7 +160,9 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_1[i] += output_0[j] * actor_encoder_neighbor_encoder_embedding_mlp_2_weight[j][i];
               }
               output_1[i] += actor_encoder_neighbor_encoder_embedding_mlp_2_bias[i];
-              output_1[i] = tanhf(output_1[i]);
+              //output_1[i] = tanhf(output_1[i]);
+              output_1[i] = relu(output_1[i]);
+
           }
 
 
@@ -178,6 +172,9 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
           meanNeighbArr[3] = meanNeighbArr[3]+output_1[3];
           meanNeighbArr[4] = meanNeighbArr[4]+output_1[4];
           meanNeighbArr[5] = meanNeighbArr[5]+output_1[5];
+          meanNeighbArr[6] = meanNeighbArr[6]+output_1[6];
+          meanNeighbArr[7] = meanNeighbArr[7]+output_1[7];
+
 
         } 
 
@@ -187,6 +184,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
         meanNeighbArr[3] /= NEIGHBORS;
         meanNeighbArr[4] /= NEIGHBORS;
         meanNeighbArr[5] /= NEIGHBORS;
+        meanNeighbArr[6] /= NEIGHBORS;
+        meanNeighbArr[7] /= NEIGHBORS;
 
           /////////////////// SELF_OUTPUT ///////////////////////////////////////////////////////////////////
           for (int i = 0; i < structure[2][1]; i++) {
@@ -195,7 +194,9 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_2[i] += state_array[j] * actor_encoder_self_encoder_0_weight[j][i];
               }
               output_2[i] += actor_encoder_self_encoder_0_bias[i];
-              output_2[i] = tanhf(output_2[i]);
+              //output_2[i] = tanhf(output_2[i]);
+              output_2[i] = relu(output_2[i]);
+
           }
           
           for (int i = 0; i < structure[3][1]; i++) {
@@ -204,7 +205,9 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_3[i] += output_2[j] * actor_encoder_self_encoder_2_weight[j][i];
               }
               output_3[i] += actor_encoder_self_encoder_2_bias[i];
-              output_3[i] = tanhf(output_3[i]);
+              //output_3[i] = tanhf(output_3[i]);
+              output_3[i] = relu(output_3[i]);
+
           }
           
 
@@ -226,7 +229,9 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_4[i] += inputff[j] * actor_encoder_feed_forward_0_weight[j][i];
               }
               output_4[i] += actor_encoder_feed_forward_0_bias[i];
-              output_4[i] = tanhf(output_4[i]);
+              //output_4[i] = tanhf(output_4[i]);
+              output_4[i] = relu(output_4[i]);
+
           }
           
           for (int i = 0; i < structure[5][1]; i++) {
@@ -248,7 +253,6 @@ int main_nn(float *outdatav)
     
     point_t pt;
     estimatorKalmanGetEstimatedPos(&pt);
-
 
     ///////////////////////////////////////////// update k nearest information
     float ownX = pt.x;
@@ -321,6 +325,19 @@ int main_nn(float *outdatav)
 
     }
 
+  
+  for(int k = 0; k < NGHBRS; k++)
+  {
+    kNearestArr[k][0] =  clip(kNearestArr[k][0], -10.0f, 10.0f);
+    kNearestArr[k][1] =  clip(kNearestArr[k][1], -10.0f, 10.0f);
+    kNearestArr[k][2] =  clip(kNearestArr[k][2], -10.0f, 10.0f);
+
+    kNearestArr[k][0] =  clip(kNearestArr[k][0], -40.0f, 40.0f);
+    kNearestArr[k][1] =  clip(kNearestArr[k][1], -40.0f, 40.0f);
+    kNearestArr[k][2] =  clip(kNearestArr[k][2], -40.0f, 40.0f);
+
+
+  }
   //////////////////////////////////////////////////////// get self information
   state_t ownState = getOwnState();
 
@@ -339,9 +356,9 @@ int main_nn(float *outdatav)
 	float omega_yaw   = radians(sensors.gyro.z);
 
 	// the state vector
-	state_array[0] = ownState.position.x - ownTaget[0];
-	state_array[1] = ownState.position.y - ownTaget[1];
-	state_array[2] = ownState.position.z - ownTaget[2];
+	state_array[0] = ownState.position.x - ownTarget[0];
+	state_array[1] = ownState.position.y - ownTarget[1];
+	state_array[2] = ownState.position.z - ownTarget[2];
 	state_array[3] = ownState.velocity.x;
 	state_array[4] = ownState.velocity.y;
 	state_array[5] = ownState.velocity.z;
@@ -358,6 +375,28 @@ int main_nn(float *outdatav)
 	state_array[16] = omega_pitch;
 	state_array[17] = omega_yaw;
 
+
+state_array[0]  = clip(state_array[0] , -10.0f, 10.0f);
+state_array[1]  = clip(state_array[1] , -10.0f, 10.0f);
+state_array[2]  = clip(state_array[2] , -10.0f, 10.0f);
+state_array[3]  = clip(state_array[3] , -3.0f, 3.0f);
+state_array[4]  = clip(state_array[4] , -3.0f, 3.0f);
+state_array[5]  = clip(state_array[5] , -3.0f, 3.0f);
+state_array[6]  = clip(state_array[6] , -1.0f, 1.0f);
+state_array[7]  = clip(state_array[7] , -1.0f, 1.0f);
+state_array[8]  = clip(state_array[8] , -1.0f, 1.0f);
+state_array[9]  = clip(state_array[9] , -1.0f, 1.0f);
+state_array[10] = clip(state_array[10], -1.0f, 1.0f);
+state_array[11] = clip(state_array[11], -1.0f, 1.0f);
+state_array[12] = clip(state_array[12], -1.0f, 1.0f);
+state_array[13] = clip(state_array[13], -1.0f, 1.0f);
+state_array[14] = clip(state_array[14], -1.0f, 1.0f);
+state_array[15] = clip(state_array[15], -40.0f, 40.0f);
+state_array[16] = clip(state_array[16], -40.0f, 40.0f);
+state_array[17] = clip(state_array[17], -40.0f, 40.0f);
+
+
+
   networkEvaluate(&motorThrusts, state_array);
 
   outdatav[0] = motorThrusts.thrust_0;
@@ -368,10 +407,24 @@ int main_nn(float *outdatav)
   return 1;
 }
 
+float clip(float val, float min, float max)
+{
+  if(val < min)
+      {
+        return min;
+      }
+      else if(val > max)
+      {
+        return max;
+      }
+      else
+      {
+        return val;
+      }
+}
 
 
 
-void communicate();
 void communicate()
 {
   if (timer == ownPacket.id)
@@ -437,8 +490,34 @@ void appMain() {
   uint64_t address = configblockGetRadioAddress();
   uint8_t my_id    = (uint8_t)((address) & 0x00000000ff);
   ownPacket.id     = my_id;
-  float thrusts[4] = {0.f, 0.f, 0.f, 0.f};
   point_t ownPosition;
+  estimatorKalmanGetEstimatedPos(&ownPosition);
+
+  Vector3 ownVeloc = getVeloc();
+
+  for(int k = 0; k < NUMQUADS; k++)
+  {
+    dronesInfo[k][0] =  8.0f;
+    dronesInfo[k][1] =  k*1.5f;
+    dronesInfo[k][2] =  0.0f;
+
+    dronesInfo[k][3] = 0.0f;
+    dronesInfo[k][4] = 0.0f;
+    dronesInfo[k][5] = 0.0f;
+
+  }
+  
+  for(int k = 0; k < NGHBRS; k++)
+  {
+    kNearestArr[k][0]  = ownPosition.x - dronesInfo[k][0];
+    kNearestArr[k][1]  = ownPosition.y - dronesInfo[k][1];
+    kNearestArr[k][2]  = ownPosition.z - dronesInfo[k][2];
+
+    kNearestArr[k][3]  = ownVeloc.x;
+    kNearestArr[k][4]  = ownVeloc.y;
+    kNearestArr[k][5]  = ownVeloc.z;
+  }
+    
 
   while(1) {
 
@@ -478,6 +557,22 @@ void appMain() {
       break;
     }
     main_nn(thrusts);
+    
+    for(int k = 0; k < 4; k++)
+    {
+      if(thrusts[k] < -1.0f)
+      {
+        thrusts[k] = -1.0f;
+      }
+      else if(thrusts[k] > 1.0f)
+      {
+        thrusts[k] = 1.0f;
+      }
+
+      thrusts[k] += 1.0f;
+      thrusts[k] /= 2.0f;
+
+    }
   }
 }
 
@@ -486,8 +581,201 @@ void appMain() {
 PARAM_GROUP_START(ctrlnn)
 PARAM_ADD(PARAM_UINT8, stt,    &state)
 PARAM_ADD(PARAM_UINT8, id,     &(ownPacket.id))
+PARAM_ADD(PARAM_FLOAT, kVal, &mototrKValue)
 PARAM_GROUP_STOP(ctrlnn)
 
 LOG_GROUP_START(logNN)         
-LOG_ADD(PARAM_UINT8, id, &(ownPacket.id))
+LOG_ADD(LOG_INT16, id, &(ownPacket.id))
+
+LOG_ADD(LOG_FLOAT, t0, &(thrusts[0]))
+LOG_ADD(LOG_FLOAT, t1, &(thrusts[1]))
+LOG_ADD(LOG_FLOAT, t2, &(thrusts[2]))
+LOG_ADD(LOG_FLOAT, t3, &(thrusts[3]))
+
+LOG_ADD(LOG_FLOAT, px, &(state_array[0]))
+LOG_ADD(LOG_FLOAT, py, &(state_array[1]))
+LOG_ADD(LOG_FLOAT, pz, &(state_array[2]))
+LOG_ADD(LOG_FLOAT, vx, &(state_array[3]))
+LOG_ADD(LOG_FLOAT, vy, &(state_array[4]))
+LOG_ADD(LOG_FLOAT, vz, &(state_array[5]))
+
+LOG_ADD(LOG_FLOAT, r0, &(state_array[7]))
+LOG_ADD(LOG_FLOAT, r1, &(state_array[8]))
+LOG_ADD(LOG_FLOAT, r2, &(state_array[9]))
+LOG_ADD(LOG_FLOAT, r3, &(state_array[10]))
+LOG_ADD(LOG_FLOAT, r4, &(state_array[6]))
+LOG_ADD(LOG_FLOAT, r5, &(state_array[11]))
+LOG_ADD(LOG_FLOAT, r6, &(state_array[12]))
+LOG_ADD(LOG_FLOAT, r7, &(state_array[13]))
+LOG_ADD(LOG_FLOAT, r8, &(state_array[14]))
+
+LOG_ADD(LOG_FLOAT, wx, &(state_array[15]))
+LOG_ADD(LOG_FLOAT, wy, &(state_array[16]))
+LOG_ADD(LOG_FLOAT, wz, &(state_array[17]))
+
+LOG_ADD(LOG_FLOAT, px0, &(kNearestArr[0][0]))
+LOG_ADD(LOG_FLOAT, py0, &(kNearestArr[0][1]))
+LOG_ADD(LOG_FLOAT, pz0, &(kNearestArr[0][2]))
+LOG_ADD(LOG_FLOAT, vx0, &(kNearestArr[0][3]))
+LOG_ADD(LOG_FLOAT, vy0, &(kNearestArr[0][4]))
+LOG_ADD(LOG_FLOAT, vz0, &(kNearestArr[0][5]))
+
+LOG_ADD(LOG_FLOAT, px1, &(kNearestArr[1][0]))
+LOG_ADD(LOG_FLOAT, py1, &(kNearestArr[1][1]))
+LOG_ADD(LOG_FLOAT, pz1, &(kNearestArr[1][2]))
+LOG_ADD(LOG_FLOAT, vx1, &(kNearestArr[1][3]))
+LOG_ADD(LOG_FLOAT, vy1, &(kNearestArr[1][4]))
+LOG_ADD(LOG_FLOAT, vz1, &(kNearestArr[1][5]))
+
+LOG_ADD(LOG_FLOAT, px2, &(kNearestArr[2][0]))
+LOG_ADD(LOG_FLOAT, py2, &(kNearestArr[2][1]))
+LOG_ADD(LOG_FLOAT, pz2, &(kNearestArr[2][2]))
+LOG_ADD(LOG_FLOAT, vx2, &(kNearestArr[2][3]))
+LOG_ADD(LOG_FLOAT, vy2, &(kNearestArr[2][4]))
+LOG_ADD(LOG_FLOAT, vz2, &(kNearestArr[2][5]))
+
+LOG_ADD(LOG_FLOAT, px3, &(kNearestArr[3][0]))
+LOG_ADD(LOG_FLOAT, py3, &(kNearestArr[3][1]))
+LOG_ADD(LOG_FLOAT, pz3, &(kNearestArr[3][2]))
+LOG_ADD(LOG_FLOAT, vx3, &(kNearestArr[3][3]))
+LOG_ADD(LOG_FLOAT, vy3, &(kNearestArr[3][4]))
+LOG_ADD(LOG_FLOAT, vz3, &(kNearestArr[3][5]))
+
+LOG_ADD(LOG_FLOAT, px4, &(kNearestArr[4][0]))
+LOG_ADD(LOG_FLOAT, py4, &(kNearestArr[4][1]))
+LOG_ADD(LOG_FLOAT, pz4, &(kNearestArr[4][2]))
+LOG_ADD(LOG_FLOAT, vx4, &(kNearestArr[4][3]))
+LOG_ADD(LOG_FLOAT, vy4, &(kNearestArr[4][4]))
+LOG_ADD(LOG_FLOAT, vz4, &(kNearestArr[4][5]))
+
+LOG_ADD(LOG_FLOAT, px5, &(kNearestArr[5][0]))
+LOG_ADD(LOG_FLOAT, py5, &(kNearestArr[5][1]))
+LOG_ADD(LOG_FLOAT, pz5, &(kNearestArr[5][2]))
+LOG_ADD(LOG_FLOAT, vx5, &(kNearestArr[5][3]))
+LOG_ADD(LOG_FLOAT, vy5, &(kNearestArr[5][4]))
+LOG_ADD(LOG_FLOAT, vz5, &(kNearestArr[5][5]))
+
+LOG_ADD(LOG_FLOAT, targetx, &(ownTarget[0]))
+LOG_ADD(LOG_FLOAT, targety, &(ownTarget[1]))
+LOG_ADD(LOG_FLOAT, targetz, &(ownTarget[2]))
+
+LOG_ADD(LOG_FLOAT, out0_0, &(output_0[0]))
+LOG_ADD(LOG_FLOAT, out0_1, &(output_0[1]))
+LOG_ADD(LOG_FLOAT, out0_2, &(output_0[2]))
+LOG_ADD(LOG_FLOAT, out0_3, &(output_0[3]))
+LOG_ADD(LOG_FLOAT, out0_4, &(output_0[4]))
+LOG_ADD(LOG_FLOAT, out0_5, &(output_0[5]))
+LOG_ADD(LOG_FLOAT, out0_6, &(output_0[6]))
+LOG_ADD(LOG_FLOAT, out0_7, &(output_0[7]))
+
+LOG_ADD(LOG_FLOAT, out1_0, &(output_1[0]))
+LOG_ADD(LOG_FLOAT, out1_1, &(output_1[1]))
+LOG_ADD(LOG_FLOAT, out1_2, &(output_1[2]))
+LOG_ADD(LOG_FLOAT, out1_3, &(output_1[3]))
+LOG_ADD(LOG_FLOAT, out1_4, &(output_1[4]))
+LOG_ADD(LOG_FLOAT, out1_5, &(output_1[5]))
+LOG_ADD(LOG_FLOAT, out1_6, &(output_1[6]))
+LOG_ADD(LOG_FLOAT, out1_7, &(output_1[7]))
+
+LOG_ADD(LOG_FLOAT, out2_0, &(output_2[0]))
+LOG_ADD(LOG_FLOAT, out2_1, &(output_2[1]))
+LOG_ADD(LOG_FLOAT, out2_2, &(output_2[2]))
+LOG_ADD(LOG_FLOAT, out2_3, &(output_2[3]))
+LOG_ADD(LOG_FLOAT, out2_4, &(output_2[4]))
+LOG_ADD(LOG_FLOAT, out2_5, &(output_2[5]))
+LOG_ADD(LOG_FLOAT, out2_6, &(output_2[6]))
+LOG_ADD(LOG_FLOAT, out2_7, &(output_2[7]))
+LOG_ADD(LOG_FLOAT, out2_8, &(output_2[8]))
+LOG_ADD(LOG_FLOAT, out2_9, &(output_2[9]))
+LOG_ADD(LOG_FLOAT, out2_10, &(output_2[10]))
+LOG_ADD(LOG_FLOAT, out2_11, &(output_2[11]))
+LOG_ADD(LOG_FLOAT, out2_12, &(output_2[12]))
+LOG_ADD(LOG_FLOAT, out2_13, &(output_2[13]))
+LOG_ADD(LOG_FLOAT, out2_14, &(output_2[14]))
+LOG_ADD(LOG_FLOAT, out2_15, &(output_2[15]))
+
+LOG_ADD(LOG_FLOAT, out3_0, &(output_3[0]))
+LOG_ADD(LOG_FLOAT, out3_1, &(output_3[1]))
+LOG_ADD(LOG_FLOAT, out3_2, &(output_3[2]))
+LOG_ADD(LOG_FLOAT, out3_3, &(output_3[3]))
+LOG_ADD(LOG_FLOAT, out3_4, &(output_3[4]))
+LOG_ADD(LOG_FLOAT, out3_5, &(output_3[5]))
+LOG_ADD(LOG_FLOAT, out3_6, &(output_3[6]))
+LOG_ADD(LOG_FLOAT, out3_7, &(output_3[7]))
+LOG_ADD(LOG_FLOAT, out3_8, &(output_3[8]))
+LOG_ADD(LOG_FLOAT, out3_9, &(output_3[9]))
+LOG_ADD(LOG_FLOAT, out3_10, &(output_3[10]))
+LOG_ADD(LOG_FLOAT, out3_11, &(output_3[11]))
+LOG_ADD(LOG_FLOAT, out3_12, &(output_3[12]))
+LOG_ADD(LOG_FLOAT, out3_13, &(output_3[13]))
+LOG_ADD(LOG_FLOAT, out3_14, &(output_3[14]))
+LOG_ADD(LOG_FLOAT, out3_15, &(output_3[15]))
+
+LOG_ADD(LOG_FLOAT, out4_0,    &(output_4[0]))
+LOG_ADD(LOG_FLOAT, out4_1,    &(output_4[1]))
+LOG_ADD(LOG_FLOAT, out4_2,    &(output_4[2]))
+LOG_ADD(LOG_FLOAT, out4_3,    &(output_4[3]))
+LOG_ADD(LOG_FLOAT, out4_4,    &(output_4[4]))
+LOG_ADD(LOG_FLOAT, out4_5,    &(output_4[5]))
+LOG_ADD(LOG_FLOAT, out4_6,    &(output_4[6]))
+LOG_ADD(LOG_FLOAT, out4_7,    &(output_4[7]))
+LOG_ADD(LOG_FLOAT, out4_8,    &(output_4[8]))
+LOG_ADD(LOG_FLOAT, out4_9,    &(output_4[9]))
+LOG_ADD(LOG_FLOAT, out4_10,   &(output_4[10]))
+LOG_ADD(LOG_FLOAT, out4_11,   &(output_4[11]))
+LOG_ADD(LOG_FLOAT, out4_12,   &(output_4[12]))
+LOG_ADD(LOG_FLOAT, out4_13,   &(output_4[13]))
+LOG_ADD(LOG_FLOAT, out4_14,   &(output_4[14]))
+LOG_ADD(LOG_FLOAT, out4_15,   &(output_4[15]))
+LOG_ADD(LOG_FLOAT, out4_16,   &(output_4[16]))
+LOG_ADD(LOG_FLOAT, out4_17,   &(output_4[17]))
+LOG_ADD(LOG_FLOAT, out4_18,   &(output_4[18]))
+LOG_ADD(LOG_FLOAT, out4_19,   &(output_4[19]))
+LOG_ADD(LOG_FLOAT, out4_20,   &(output_4[20]))
+LOG_ADD(LOG_FLOAT, out4_21,   &(output_4[21]))
+LOG_ADD(LOG_FLOAT, out4_22,   &(output_4[22]))
+LOG_ADD(LOG_FLOAT, out4_23,   &(output_4[23]))
+LOG_ADD(LOG_FLOAT, out4_4,    &(output_4[24]))
+LOG_ADD(LOG_FLOAT, out4_5,    &(output_4[25]))
+LOG_ADD(LOG_FLOAT, out4_6,    &(output_4[26]))
+LOG_ADD(LOG_FLOAT, out4_7,    &(output_4[27]))
+LOG_ADD(LOG_FLOAT, out4_8,    &(output_4[28]))
+LOG_ADD(LOG_FLOAT, out4_9,    &(output_4[29]))
+LOG_ADD(LOG_FLOAT, out4_10,   &(output_4[30]))
+LOG_ADD(LOG_FLOAT, out4_11,   &(output_4[31]))
+
+LOG_ADD(LOG_FLOAT, inputff_0,    &(inputff[0]))
+LOG_ADD(LOG_FLOAT, inputff_1,    &(inputff[1]))
+LOG_ADD(LOG_FLOAT, inputff_2,    &(inputff[2]))
+LOG_ADD(LOG_FLOAT, inputff_3,    &(inputff[3]))
+LOG_ADD(LOG_FLOAT, inputff_4,    &(inputff[4]))
+LOG_ADD(LOG_FLOAT, inputff_5,    &(inputff[5]))
+LOG_ADD(LOG_FLOAT, inputff_6,    &(inputff[6]))
+LOG_ADD(LOG_FLOAT, inputff_7,    &(inputff[7]))
+LOG_ADD(LOG_FLOAT, inputff_8,    &(inputff[8]))
+LOG_ADD(LOG_FLOAT, inputff_9,    &(inputff[9]))
+LOG_ADD(LOG_FLOAT, inputff_10,   &(inputff[10]))
+LOG_ADD(LOG_FLOAT, inputff_11,   &(inputff[11]))
+LOG_ADD(LOG_FLOAT, inputff_12,   &(inputff[12]))
+LOG_ADD(LOG_FLOAT, inputff_13,   &(inputff[13]))
+LOG_ADD(LOG_FLOAT, inputff_14,   &(inputff[14]))
+LOG_ADD(LOG_FLOAT, inputff_15,   &(inputff[15]))
+LOG_ADD(LOG_FLOAT, inputff_16,   &(inputff[16]))
+LOG_ADD(LOG_FLOAT, inputff_17,   &(inputff[17]))
+LOG_ADD(LOG_FLOAT, inputff_18,   &(inputff[18]))
+LOG_ADD(LOG_FLOAT, inputff_19,   &(inputff[19]))
+LOG_ADD(LOG_FLOAT, inputff_20,   &(inputff[20]))
+LOG_ADD(LOG_FLOAT, inputff_21,   &(inputff[21]))
+LOG_ADD(LOG_FLOAT, inputff_22,   &(inputff[22]))
+LOG_ADD(LOG_FLOAT, inputff_23,   &(inputff[23]))
+
+
+LOG_ADD(LOG_FLOAT, out5_0,  &(output_5[0]))
+LOG_ADD(LOG_FLOAT, out5_1,  &(output_5[1]))
+LOG_ADD(LOG_FLOAT, out5_2,  &(output_5[2]))
+LOG_ADD(LOG_FLOAT, out5_3,  &(output_5[3]))
+
 LOG_GROUP_STOP(logNN)
+
+
+
