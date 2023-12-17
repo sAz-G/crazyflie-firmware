@@ -102,6 +102,16 @@ static struct {
   int16_t rateYaw;
 } stateCompressed;
 
+state_t getOwnState()
+{
+  return state;
+}
+
+sensorData_t getSensorData()
+{
+  return sensorData;
+}
+
 Vector3 getVelocity()
 {
   float vx = ((float)stateCompressed.vx)/1000.0f;

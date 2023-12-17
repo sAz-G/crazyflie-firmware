@@ -54,4 +54,7 @@ float getqx();
 float getqy();
 float getqz();
 float getqw();
+
+state_t getOwnState();
+sensorData_t getSensorData();
 #endif /* STABILIZER_H_ */
