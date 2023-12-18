@@ -126,7 +126,8 @@ static const float actor_encoder_self_encoder_2_bias[16] = {0.11278434842824936,
 
 static const float actor_encoder_feed_forward_0_bias[32] = {0.0354200154542923,0.042984649538993835,-0.049426812678575516,-0.042806658893823624,-0.13451990485191345,-0.03357531130313873,-0.055147573351860046,-0.028108185157179832,-0.059874746948480606,-0.04978301748633385,0.19132012128829956,-0.0012429456692188978,0.13434217870235443,-0.053520843386650085,0.11479896306991577,0.07518072426319122,-0.06083989888429642,-0.0022931769490242004,-0.02801239863038063,0.035718224942684174,0.04469266161322594,-0.025806207209825516,0.08251718431711197,-0.221547931432724,-0.04240749031305313,-0.005646929610520601,-0.0749375969171524,-0.09083469212055206,0.057736463844776154,-0.05463701859116554,-0.05452791601419449,0.12896470725536346};
 
-static const float critic_encoder_neighbor_encoder_embedding_mlp_0_bias[8] = {-3.301216202089563e-05,-0.04447596147656441,0.6192658543586731,0.0016107149422168732,-0.002445186022669077,-0.07643191516399384,0.1841258406639099,-0.006652195006608963};
+static const float action_parameterization_distribution_linear_bias[4] = {-0.0032787735108286142,0.09838566929101944,-0.19764924049377441,0.1253713071346283};
+
 
 
 
@@ -153,7 +154,6 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                 output_0[i] += kNearestArr[k][j] * actor_encoder_neighbor_encoder_embedding_mlp_0_weight[j][i];
               }
               output_0[i] += actor_encoder_neighbor_encoder_embedding_mlp_0_bias[i];
-              //output_0[i] = tanhf(output_0[i]);
               output_0[i] = relu(output_0[i]);
           }
       
@@ -163,7 +163,6 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_1[i] += output_0[j] * actor_encoder_neighbor_encoder_embedding_mlp_2_weight[j][i];
               }
               output_1[i] += actor_encoder_neighbor_encoder_embedding_mlp_2_bias[i];
-              //output_1[i] = tanhf(output_1[i]);
               output_1[i] = relu(output_1[i]);
 
           }
@@ -242,7 +241,7 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
               for (int j = 0; j < structure[5][0]; j++) {
                   output_5[i] += output_4[j] * action_parameterization_distribution_linear_weight[j][i];
               }
-              output_5[i] += critic_encoder_neighbor_encoder_embedding_mlp_0_bias[i];
+              output_5[i] += action_parameterization_distribution_linear_bias[i];
           }
         control_n->thrust_0 = output_5[0];
         control_n->thrust_1 = output_5[1];
