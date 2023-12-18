@@ -142,6 +142,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
       meanNeighbArr[3] = 0.0f;
       meanNeighbArr[4] = 0.0f;
       meanNeighbArr[5] = 0.0f;
+      meanNeighbArr[6] = 0.0f;
+      meanNeighbArr[7] = 0.0f;
 
         for(int k = 0; k < NEIGHBORS; k++)
         {
