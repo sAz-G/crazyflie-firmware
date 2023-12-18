@@ -47,6 +47,7 @@
 #include "stabilizer.h"
 #include "math3d.h"
 #include "../include/coll_avoid_main.h"
+#include "motors.h"
 
 #define NGHBRS 6
 #define NGHBRSDIM 6 
@@ -476,10 +477,10 @@ uint8_t isHighLevel()
 
 void  getThrusts(uint16_t* trsts)
 {
-  trsts[0] = thrustsToMotor[0];
-  trsts[1] = thrustsToMotor[1];
-  trsts[2] = thrustsToMotor[2];
-  trsts[3] = thrustsToMotor[3];
+  trsts[0] = thrustsToMotor[1];
+  trsts[1] = thrustsToMotor[2];
+  trsts[2] = thrustsToMotor[3];
+  trsts[3] = thrustsToMotor[0];
 }
 
 void appMain() { 
@@ -536,10 +537,14 @@ void appMain() {
       break;
     case 1: // start 
             
-      for(int k = 0; k < 4; k++)
-      {
-        thrustsToMotor[k] = (uint16_t)(UINT16_MAX*thrusts[k]*(mototrKValue));
-      }
+      // for(int k = 0; k < 4; k++)
+      // {
+      //   thrustsToMotor[k] = (uint16_t)(UINT16_MAX*thrusts[k]*(mototrKValue));
+      // }
+      motorsSetRatio(0, thrusts[1]);
+      motorsSetRatio(1, thrusts[2]);
+      motorsSetRatio(2, thrusts[3]);
+      motorsSetRatio(3, thrusts[0]);
 
       break;
     case 2: // land
@@ -573,6 +578,7 @@ void appMain() {
       thrusts[k] /= 2.0f;
 
     }
+
   }
 }
 
