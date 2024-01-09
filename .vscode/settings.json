@@ -23,6 +23,7 @@
         "coll_avoid_main.h": "c",
         "mlp.h": "c",
         "system_error": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "stabilizer.h": "c"
     }
 }

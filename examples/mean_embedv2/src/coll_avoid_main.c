@@ -341,21 +341,21 @@ int main_nn(float *outdatav)
   
 	// angular velocity
   sensorData_t sensors = getSensorData();
-	float omega_roll  = radians(sensors.gyro.x);
-	float omega_pitch = radians(sensors.gyro.y);
-	float omega_yaw   = radians(sensors.gyro.z);
+	float omega_roll     = radians(sensors.gyro.x);
+	float omega_pitch    = radians(sensors.gyro.y);
+	float omega_yaw      = radians(sensors.gyro.z);
 
 	// the state vector
-	state_array[0] = ownState.position.x - ownTarget[0];
-	state_array[1] = ownState.position.y - ownTarget[1];
-	state_array[2] = ownState.position.z - ownTarget[2];
-	state_array[3] = ownState.velocity.x;
-	state_array[4] = ownState.velocity.y;
-	state_array[5] = ownState.velocity.z;
-	state_array[6] = rot.m[0][0];
-	state_array[7] = rot.m[0][1];
-	state_array[8] = rot.m[0][2];
-	state_array[9] = rot.m[1][0];
+	state_array[0]  = ownState.position.x - ownTarget[0];
+	state_array[1]  = ownState.position.y - ownTarget[1];
+	state_array[2]  = ownState.position.z - ownTarget[2];
+	state_array[3]  = ownState.velocity.x;
+	state_array[4]  = ownState.velocity.y;
+	state_array[5]  = ownState.velocity.z;
+	state_array[6]  = rot.m[0][0];
+	state_array[7]  = rot.m[0][1];
+	state_array[8]  = rot.m[0][2];
+	state_array[9]  = rot.m[1][0];
 	state_array[10] = rot.m[1][1];
 	state_array[11] = rot.m[1][2];
 	state_array[12] = rot.m[2][0];
@@ -511,7 +511,7 @@ void appMain() {
 
   while(1) {
 
-    vTaskDelay(M2T(1));
+    //vTaskDelay(M2T(1));
     estimatorKalmanGetEstimatedPos(&ownPosition);
     //communicate();
     timer++;

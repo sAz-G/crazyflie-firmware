@@ -56,6 +56,7 @@
 #include "statsCnt.h"
 #include "static_mem.h"
 #include "rateSupervisor.h"
+#include "/home/saz/GitHub/masterthesis_crazyflie/examples/mean_embedv2/include/coll_avoid_main.h"
 
 static bool isInit;
 
