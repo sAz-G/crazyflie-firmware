@@ -147,7 +147,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                 output_0[i] += kNearestArr[k][j] * actor_encoder_neighbor_encoder_embedding_mlp_0_weight[j][i];
               }
               output_0[i] += actor_encoder_neighbor_encoder_embedding_mlp_0_bias[i];
-              output_0[i] = tanhf(output_0[i]);
+              //output_0[i] = tanhf(output_0[i]);
+              output_0[i] = (output_0[i] < 0.0f) ? 0.0f : output_0[i];
           }
       
           for (int i = 0; i < structure[1][1]; i++) {
@@ -156,7 +157,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_1[i] += output_0[j] * actor_encoder_neighbor_encoder_embedding_mlp_2_weight[j][i];
               }
               output_1[i] += actor_encoder_neighbor_encoder_embedding_mlp_2_bias[i];
-              output_1[i] = tanhf(output_1[i]);
+              //output_1[i] = tanhf(output_1[i]);
+              output_1[i] = (output_1[i] < 0.0f) ? 0.0f : output_1[i];
           }
 
 
@@ -188,7 +190,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_2[i] += state_array[j] * actor_encoder_self_encoder_0_weight[j][i];
               }
               output_2[i] += actor_encoder_self_encoder_0_bias[i];
-              output_2[i] = tanhf(output_2[i]);
+              //output_2[i] = tanhf(output_2[i]);
+              output_2[i] = (output_2[i] < 0.0f) ? 0.0f : output_2[i];
 
           }
           
@@ -198,8 +201,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_3[i] += output_2[j] * actor_encoder_self_encoder_2_weight[j][i];
               }
               output_3[i] += actor_encoder_self_encoder_2_bias[i];
-              output_3[i] = tanhf(output_3[i]);
-
+              //output_3[i] = tanhf(output_3[i]);
+              output_3[i] = (output_3[i] < 0.0f) ? 0.0f : output_3[i];
           }
           
 
@@ -221,7 +224,8 @@ void networkEvaluate(struct control_t_n *control_n, const float *state_array) {
                   output_4[i] += inputff[j] * actor_encoder_feed_forward_0_weight[j][i];
               }
               output_4[i] += actor_encoder_feed_forward_0_bias[i];
-              output_4[i] = tanhf(output_4[i]);
+              //output_4[i] = tanhf(output_4[i]);
+              output_4[i] = (output_4[i] < 0.0f) ? 0.0f : output_4[i];
           }
           
           for (int i = 0; i < structure[5][1]; i++) {
@@ -322,10 +326,9 @@ int main_nn(float *outdatav)
     kNearestArr[k][1] =  clip(kNearestArr[k][1], -10.0f, 10.0f);
     kNearestArr[k][2] =  clip(kNearestArr[k][2], -10.0f, 10.0f);
 
-    kNearestArr[k][0] =  clip(kNearestArr[k][0], -40.0f, 40.0f);
-    kNearestArr[k][1] =  clip(kNearestArr[k][1], -40.0f, 40.0f);
-    kNearestArr[k][2] =  clip(kNearestArr[k][2], -40.0f, 40.0f);
-
+    kNearestArr[k][3] =  clip(kNearestArr[k][3], -6.0f, 6.0f);
+    kNearestArr[k][4] =  clip(kNearestArr[k][4], -6.0f, 6.0f);
+    kNearestArr[k][5] =  clip(kNearestArr[k][5], -6.0f, 6.0f);
 
   }
   //////////////////////////////////////////////////////// get self information
