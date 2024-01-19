@@ -322,9 +322,9 @@ int main_nn(float *outdatav)
     kNearestArr[k][1] =  clip(kNearestArr[k][1], -10.0f, 10.0f);
     kNearestArr[k][2] =  clip(kNearestArr[k][2], -10.0f, 10.0f);
 
-    kNearestArr[k][0] =  clip(kNearestArr[k][0], -40.0f, 40.0f);
-    kNearestArr[k][1] =  clip(kNearestArr[k][1], -40.0f, 40.0f);
-    kNearestArr[k][2] =  clip(kNearestArr[k][2], -40.0f, 40.0f);
+    kNearestArr[k][3] =  clip(kNearestArr[k][3], -6.0f, 6.0f);
+    kNearestArr[k][4] =  clip(kNearestArr[k][4], -6.0f, 6.0f);
+    kNearestArr[k][5] =  clip(kNearestArr[k][5], -6.0f, 6.0f);
 
 
   }
